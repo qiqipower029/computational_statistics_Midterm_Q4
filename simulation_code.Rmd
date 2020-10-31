@@ -80,7 +80,7 @@ para2 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.l
 ```{r simulation}
 simulation.function = function(parameteters, N, n.sim = 1000) {
 
-# Create vectors to store results
+  # Create vectors to store estimates
   lambda1_s = numeric(n.sim)
   lambda2_s = numeric(n.sim)
   p1_s = numeric(n.sim)
@@ -106,6 +106,33 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
   rho45_s = numeric(n.sim)
   rho46_s = numeric(n.sim)
   rho56_s = numeric(n.sim)
+  
+  # Create vectors to store confidence intervals
+  lambda1_ci = numeric(n.sim)
+  lambda2_ci = numeric(n.sim)
+  p1_ci = numeric(n.sim)
+  p2_ci = numeric(n.sim)
+  t11_ci = numeric(n.sim)
+  t21_ci = numeric(n.sim)
+  t31_ci = numeric(n.sim)
+  t12_ci = numeric(n.sim)
+  t22_ci = numeric(n.sim)
+  t32_ci = numeric(n.sim)
+  rho12_ci = numeric(n.sim)
+  rho13_ci = numeric(n.sim)
+  rho14_ci = numeric(n.sim)
+  rho15_ci = numeric(n.sim)
+  rho16_ci = numeric(n.sim)
+  rho23_ci = numeric(n.sim)
+  rho24_ci = numeric(n.sim)
+  rho25_ci = numeric(n.sim)
+  rho26_ci = numeric(n.sim)
+  rho34_ci = numeric(n.sim)
+  rho35_ci = numeric(n.sim)
+  rho36_ci = numeric(n.sim)
+  rho45_ci = numeric(n.sim)
+  rho46_ci = numeric(n.sim)
+  rho56_ci = numeric(n.sim)
 
   for (i in 1:n.sim) {
     
@@ -149,6 +176,13 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
     rho45_s[i] = correlation[4,5]
     rho46_s[i] = correlation[4,6]
     rho56_s[i] = correlation[5,6]
+    
+    # Calculate confidence interval
+    lambda1_ci[i] = c(lambda1.mean - 1.96*sqrt(lambda1.mean/N), lambda1.mean + 1.96*sqrt(lambda1.mean/N))
+    lambda2_ci[i] = c(lambda2.mean - 1.96*sqrt(lambda2.mean/N), lambda2.mean + 1.96*sqrt(lambda2.mean/N))
+    p1_ci[i] = c(p1.mean-1.96*sqrt(p1.mean*(1-p1.mean)/N), p1.mean+1.96*sqrt(p1.mean*(1-p1.mean)/N))
+    p2_ci[i] = c(p2.mean-1.96*sqrt(p2.mean*(1-p2.mean)/N), p2.mean+1.96*sqrt(p2.mean*(1-p2.mean)/N))
+    
   }
   
   lambda1_mean = mean(lambda1_s)
@@ -278,7 +312,8 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
                    rho24 = rho24_RMSE, rho25 = rho25_RMSE, rho26 = rho26_RMSE,
                    rho34 = rho34_RMSE, rho35 = rho35_RMSE, rho36 = rho36_RMSE,
                    rho45 = rho45_RMSE, rho46 = rho46_RMSE, rho56 = rho56_RMSE)  
- 
+  # Calculate CR
+
 
 return(t11_mean)
 }
