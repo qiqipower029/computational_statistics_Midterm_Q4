@@ -11,3 +11,166 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
+
+```{r create true parameters even}
+# small marginal poisson rates, even marginal binary and orinal
+n.P = 2 # Number of Poisson variables
+n.B = 2 # Number of binary variables
+n.O = 2 # Number of ordinal variables
+lambda.vec = c(0.2, 0.7)# Rate vector for Poisson variables
+prop.vec=c(0.55, 0.45)                               # Probability vector for binary variables
+prop.list=list(c(0.25, 0.5, 0.75), c(0.20, 0.45, 0.75))  # A list of probability vectors for ordinal variables. (cdf-cutoff)
+```
+
+```{r create weak correlations}
+# very weak correlation
+set.seed(5)
+W_Corr = runif(n=15, min = 0.001,max = 0.199)
+W_PN_Indicator = sample(c(-1,1), size = 15, replace = TRUE)
+W_Corr_Final = W_Corr*W_PN_Indicator
+W_Corr_Final
+
+# Create overall correlation matrix, SIGMA
+M = W_Corr_Final
+N = diag(6)  
+N[lower.tri(N)] = M  # lower triangle 
+corr.mat_W = N+t(N)    # symmetric matrix
+diag(corr.mat_W) = 1   
+corr.mat_W
+
+# Validates the specified correlation matrix
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,corr.mat_W)
+
+# checks if there are range violations among pp, po, pb, bb, bo, oo combinations
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,corr.mat)
+```
+
+```{r create strong correlation}
+# weak correlation
+set.seed(5)
+M_Corr = runif(n=15, min = 0.2,max = 0.399)
+M_PN_Indicator = sample(c(-1,1), size = 15, replace = TRUE)
+M_Corr_Final = M_Corr*M_PN_Indicator
+M_Corr_Final
+
+# Create overall correlation matrix, SIGMA
+M = M_Corr_Final
+N = diag(6)  
+N[lower.tri(N)] = M  # lower triangle 
+corr.mat_M = N+t(N)    # symmetric matrix
+diag(corr.mat_M) = 1   
+corr.mat_M
+
+# Validates the specified correlation matrix
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,corr.mat_M)
+
+correlation.limits(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list)
+# checks if there are range violations among pp, po, pb, bb, bo, oo combinations
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,corr.mat_M)
+```
+
+```{r create parameter for small and even parameters}
+# create parameter for very weak corr, small and even parameters
+para1 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = corr.mat_W)
+
+# create parameter for weak corr, small and even parameters
+para2 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = corr.mat_M)
+```
+
+```{r simulation}
+simulation.function = function(parameteters, N, n.sim = 1000) {
+
+# Create vectors to store results
+  lambda1_s = numeric(n.sim)
+  lambda2_s = numeric(n.sim)
+  p1_s = numeric(n.sim)
+  p2_s = numeric(n.sim)
+  t11_s = numeric(n.sim)
+  t21_s = numeric(n.sim)
+  t31_s = numeric(n.sim)
+  t12_s = numeric(n.sim)
+  t22_s = numeric(n.sim)
+  t32_s = numeric(n.sim)
+  rho12_s = numeric(n.sim)
+  rho13_s = numeric(n.sim)
+  rho14_s = numeric(n.sim)
+  rho15_s = numeric(n.sim)
+  rho16_s = numeric(n.sim)
+  rho23_s = numeric(n.sim)
+  rho24_s = numeric(n.sim)
+  rho25_s = numeric(n.sim)
+  rho26_s = numeric(n.sim)
+  rho34_s = numeric(n.sim)
+  rho35_s = numeric(n.sim)
+  rho36_s = numeric(n.sim)
+  rho45_s = numeric(n.sim)
+  rho46_s = numeric(n.sim)
+  rho56_s = numeric(n.sim)
+
+  for (i in 1:n.sim) {
+    
+    # Computes the final intermediate correlation matrix, SIGMA*
+    final.corr.mat=overall.corr.mat(n.P,n.B,n.O,
+                                lambda.vec,
+                                prop.vec, 
+                                prop.list,
+                                corr.vec=NULL,corr.mat)
+
+    # Generate mixed data
+    mymixdata = gen.PoisBinOrd(N, n.P, n.B, n.O,
+                           lambda.vec,
+                           prop.vec,
+                           prop.list, 
+                           final.corr.mat)
+
+    lambda1.mean = mean(mymixdata[,1]); lambda1_s[i] = lambda1.mean
+    lambda2.mean = mean(mymixdata[,2]); lambda2_s[i] = lambda1.mean
+    p1.mean = mean(mymixdata[,3]); p1_s[i] = p1.mean
+    p2.mean = mean(mymixdata[,4]); p2_s[i] = p2.mean
+    t11.mean = length(mymixdata[,5][mymixdata[,5] == 0])/N; t11_s[i] = t11.mean
+    t21.mean = length(mymixdata[,5][mymixdata[,5] <= 1])/N; t21_s[i] = t21.mean
+    t31.mean = length(mymixdata[,5][mymixdata[,5] <= 2])/N; t31_s[i] = t31.mean
+    t12.mean = length(mymixdata[,6][mymixdata[,5] == 0])/N; t12_s[i] = t12.mean
+    t22.mean = length(mymixdata[,6][mymixdata[,6] <= 1])/N; t22_s[i] = t22.mean
+    t32.mean = length(mymixdata[,6][mymixdata[,6] <= 2])/N; t32_s[i] = t32.mean
+    correlation = cor(mymixdata)
+    rho12_s[i] = correlation[1,2]
+    rho13_s[i] = correlation[1,3]
+    rho14_s[i] = correlation[1,4]
+    rho15_s[i] = correlation[1,5]
+    rho16_s[i] = correlation[1,6]
+    rho23_s[i] = correlation[2,3]
+    rho24_s[i] = correlation[2,4]
+    rho25_s[i] = correlation[2,5]
+    rho26_s[i] = correlation[2,6]
+    rho34_s[i] = correlation[3,4]
+    rho35_s[i] = correlation[3,5]
+    rho36_s[i] = correlation[3,6]
+    rho45_s[i] = correlation[4,5]
+    rho46_s[i] = correlation[4,6]
+    rho56_s[i] = correlation[5,6]
+  }
+  
+  lambda1_mean = mean(lambda1_s)
+  lambda2_mean = mean(lambda2_s)
+  p1_mean = mean(p1_s)
+  p2_mean = mean(p2_s)
+  t11_mean = mean(t11_s)
+  t21_mean = mean(t21_s)
+  t31_mean = mean(t31_s)
+  t12_mean = mean(t12_s)
+  t22_mean = mean(t22_s)
+  t32_mean = mean(t32_s)
+  
+  mean_result = list(lambda1 = lambda1_mean, lambda2 = lambda2_mean, p1 = p1_mean, p2 = p2_mean,
+                     t11 = t11_mean, t21 = t21_mean, t31 = t31_mean,
+                     t12 = t12_mean, t22 = t22_mean, t32 = t32_mean)
+  
+ 
+
+return(t11_mean)
+}
+
+simulation.function(para1, 100)
+```
+

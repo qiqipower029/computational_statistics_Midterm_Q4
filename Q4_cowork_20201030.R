@@ -20,13 +20,13 @@ diag(corr.mat) = 1
 corr.mat
 
 # Validates the specified correlation matrix
-# validation.corr(n.P,n.B,n.O,corr.vec=NULL,corr.mat)
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,corr.mat)
 
 # checks if there are range violations among pp, po, pb, bb, bo, oo combinations
-# correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,corr.mat)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,corr.mat)
 
 # print correlation limits among Poisson, binary, and ordinal variables and within themselves.
-# correlation.limits(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list)
+ correlation.limits(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list)
 
 # Computes the final intermediate correlation matrix, SIGMA*
 final.corr.mat=overall.corr.mat(n.P,n.B,n.O,
