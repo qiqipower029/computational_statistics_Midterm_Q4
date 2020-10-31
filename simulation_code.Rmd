@@ -161,10 +161,30 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
   t12_mean = mean(t12_s)
   t22_mean = mean(t22_s)
   t32_mean = mean(t32_s)
+  rho12_mean = mean(rho12_s)
+  rho13_mean = mean(rho13_s)
+  rho14_mean = mean(rho14_s)
+  rho15_mean = mean(rho15_s)
+  rho16_mean = mean(rho16_s)
+  rho23_mean = mean(rho23_s)
+  rho24_mean = mean(rho24_s)
+  rho25_mean = mean(rho25_s)
+  rho26_mean = mean(rho26_s)
+  rho34_mean = mean(rho34_s)
+  rho35_mean = mean(rho35_s)
+  rho36_mean = mean(rho36_s)
+  rho45_mean = mean(rho45_s)
+  rho46_mean = mean(rho46_s)
+  rho56_mean = mean(rho56_s)
   
   mean_result = list(lambda1 = lambda1_mean, lambda2 = lambda2_mean, p1 = p1_mean, p2 = p2_mean,
                      t11 = t11_mean, t21 = t21_mean, t31 = t31_mean,
-                     t12 = t12_mean, t22 = t22_mean, t32 = t32_mean)
+                     t12 = t12_mean, t22 = t22_mean, t32 = t32_mean,
+                     rho12 = rho12_mean, rho13 = rho13_mean, rho14 = rho14_mean, 
+                     rho15 = rho15_mean, rho16 = rho16_mean, rho23 = rho23_mean,
+                     rho24 = rho24_mean, rho25 = rho25_mean, rho26 = rho26_mean,
+                     rho34 = rho34_mean, rho35 = rho35_mean, rho36 = rho36_mean,
+                     rho45 = rho45_mean, rho46 = rho46_mean, rho56 = rho56_mean)
   
  
 
