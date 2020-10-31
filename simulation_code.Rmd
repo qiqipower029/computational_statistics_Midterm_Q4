@@ -185,7 +185,99 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
                      rho24 = rho24_mean, rho25 = rho25_mean, rho26 = rho26_mean,
                      rho34 = rho34_mean, rho35 = rho35_mean, rho36 = rho36_mean,
                      rho45 = rho45_mean, rho46 = rho46_mean, rho56 = rho56_mean)
+  # Calculate RB
+  lambda1_RB = ((lambda1_mean - parameteters$lambda.vec[1])/parameteters$lambda.vec[1])*100
+  lambda2_RB = ((lambda2_mean - parameteters$lambda.vec[2])/parameteters$lambda.vec[2])*100
+  p1_RB = ((p1_mean - parameteters$prop.vec[1])/parameteters$prop.vec[1])*100
+  p2_RB = ((p2_mean - parameteters$prop.vec[2])/parameteters$prop.vec[2])*100
+  t1_RB = ((c(t11_mean, t21_mean, t31_mean) - unlist(parameteters$prop.list[1]))/unlist(parameteters$prop.list[1]))*100
+  t2_RB = ((c(t12_mean, t22_mean, t32_mean) - unlist(parameteters$prop.list[2]))/unlist(parameteters$prop.list[2]))*100
+  rho12_RB = ((rho12_mean - parameteters$corr.mat[1,2])/parameteters$corr.mat[1,2])*100
+  rho13_RB = ((rho13_mean - parameteters$corr.mat[1,3])/parameteters$corr.mat[1,3])*100
+  rho14_RB = ((rho14_mean - parameteters$corr.mat[1,4])/parameteters$corr.mat[1,4])*100
+  rho15_RB = ((rho15_mean - parameteters$corr.mat[1,5])/parameteters$corr.mat[1,5])*100
+  rho16_RB = ((rho16_mean - parameteters$corr.mat[1,6])/parameteters$corr.mat[1,6])*100
+  rho23_RB = ((rho23_mean - parameteters$corr.mat[2,3])/parameteters$corr.mat[2,3])*100
+  rho24_RB = ((rho24_mean - parameteters$corr.mat[2,4])/parameteters$corr.mat[2,4])*100
+  rho25_RB = ((rho25_mean - parameteters$corr.mat[2,5])/parameteters$corr.mat[2,5])*100
+  rho26_RB = ((rho26_mean - parameteters$corr.mat[2,6])/parameteters$corr.mat[2,6])*100
+  rho34_RB = ((rho34_mean - parameteters$corr.mat[3,4])/parameteters$corr.mat[3,4])*100
+  rho35_RB = ((rho35_mean - parameteters$corr.mat[3,5])/parameteters$corr.mat[3,5])*100
+  rho36_RB = ((rho36_mean - parameteters$corr.mat[3,6])/parameteters$corr.mat[3,6])*100
+  rho45_RB = ((rho45_mean - parameteters$corr.mat[4,5])/parameteters$corr.mat[4,5])*100
+  rho46_RB = ((rho46_mean - parameteters$corr.mat[4,6])/parameteters$corr.mat[4,6])*100
+  rho56_RB = ((rho56_mean - parameteters$corr.mat[5,6])/parameteters$corr.mat[5,6])*100
   
+  RB_result = list(lambda1 = lambda1_RB, lambda2 = lambda2_RB, p1 = p1_RB, p2 = p2_RB,
+                   t11 = t11_RB, t21 = t21_RB, t31 = t31_RB,
+                   t12 = t12_RB, t22 = t22_RB, t32 = t32_RB,
+                   rho12 = rho12_RB, rho13 = rho13_RB, rho14 = rho14_RB, 
+                   rho15 = rho15_RB, rho16 = rho16_RB, rho23 = rho23_RB,
+                   rho24 = rho24_RB, rho25 = rho25_RB, rho26 = rho26_RB,
+                   rho34 = rho34_RB, rho35 = rho35_RB, rho36 = rho36_RB,
+                   rho45 = rho45_RB, rho46 = rho46_RB, rho56 = rho56_RB)
+  
+  # Calculate SB
+  lambda1_SB = (abs(lambda1_mean - parameteters$lambda.vec[1])/sd(lambda1_s))*100
+  lambda2_SB = (abs(lambda2_mean - parameteters$lambda.vec[2])/sd(lambda2_s))*100
+  p1_SB = (abs(p1_mean - parameteters$prop.vec[1])/sd(p1_s))*100
+  p2_SB = (abs(p2_mean - parameteters$prop.vec[2])/sd(p2_s))*100
+  t1_SB = (abs(c(t11_mean, t21_mean, t31_mean) - unlist(parameteters$prop.list[1]))/c(sd(t11_s), sd(t21_s), sd(t31_s)))*100
+  t2_SB = (abs(c(t12_mean, t22_mean, t32_mean) - unlist(parameteters$prop.list[2]))/c(sd(t12_s), sd(t22_s), sd(t32_s)))*100
+  rho12_SB = (abs(rho12_mean - parameteters$corr.mat[1,2])/sd(rho12_s))*100
+  rho13_SB = (abs(rho13_mean - parameteters$corr.mat[1,3])/sd(rho13_s))*100
+  rho14_SB = (abs(rho14_mean - parameteters$corr.mat[1,4])/sd(rho14_s))*100
+  rho15_SB = (abs(rho15_mean - parameteters$corr.mat[1,5])/sd(rho15_s))*100
+  rho16_SB = (abs(rho16_mean - parameteters$corr.mat[1,6])/sd(rho16_s))*100
+  rho23_SB = (abs(rho23_mean - parameteters$corr.mat[2,3])/sd(rho23_s))*100
+  rho24_SB = (abs(rho24_mean - parameteters$corr.mat[2,4])/sd(rho24_s))*100
+  rho25_SB = (abs(rho25_mean - parameteters$corr.mat[2,5])/sd(rho25_s))*100
+  rho26_SB = (abs(rho26_mean - parameteters$corr.mat[2,6])/sd(rho26_s))*100
+  rho34_SB = (abs(rho34_mean - parameteters$corr.mat[3,4])/sd(rho34_s))*100
+  rho35_SB = (abs(rho35_mean - parameteters$corr.mat[3,5])/sd(rho35_s))*100
+  rho36_SB = (abs(rho36_mean - parameteters$corr.mat[3,6])/sd(rho36_s))*100
+  rho45_SB = (abs(rho45_mean - parameteters$corr.mat[4,5])/sd(rho45_s))*100
+  rho46_SB = (abs(rho46_mean - parameteters$corr.mat[4,6])/sd(rho46_s))*100
+  rho56_SB = (abs(rho56_mean - parameteters$corr.mat[5,6])/sd(rho56_s))*100
+  SB_result = list(lambda1 = lambda1_SB, lambda2 = lambda2_SB, p1 = p1_SB, p2 = p2_SB,
+                   t11 = t11_SB, t21 = t21_SB, t31 = t31_SB,
+                   t12 = t12_SB, t22 = t22_SB, t32 = t32_SB,
+                   rho12 = rho12_SB, rho13 = rho13_SB, rho14 = rho14_SB, 
+                   rho15 = rho15_SB, rho16 = rho16_SB, rho23 = rho23_SB,
+                   rho24 = rho24_SB, rho25 = rho25_SB, rho26 = rho26_SB,
+                   rho34 = rho34_SB, rho35 = rho35_SB, rho36 = rho36_SB,
+                   rho45 = rho45_SB, rho46 = rho46_SB, rho56 = rho56_SB)
+  
+  # Calculate RMSE
+  lambda1_RMSE = sqrt(mean((lambda1_s-parameters$lambda.vec[1])^2))
+  lambda2_RMSE = sqrt(mean((lambda2_s-parameters$lambda.vec[2])^2))
+  p1_RMSE = sqrt(mean((p1_s - parameteters$prop.vec[1])^2))
+  p2_RMSE = sqrt(mean((p2_s - parameteters$prop.vec[2])^2))
+  t1_RMSE = sqrt(mean((c(t11_s, t21_s, t31_s) - unlist(parameteters$prop.list[1]))^2))
+  t2_RMSE = sqrt(mean((c(t12_s, t22_s, t32_s) - unlist(parameteters$prop.list[2]))^2))
+  rho12_RMSE = sqrt(mean((rho12_s - parameteters$corr.mat[1,2])^2))
+  rho13_RMSE = sqrt(mean((rho13_s - parameteters$corr.mat[1,3])^2))
+  rho14_RMSE = sqrt(mean((rho14_s - parameteters$corr.mat[1,4])^2))
+  rho15_RMSE = sqrt(mean((rho15_s - parameteters$corr.mat[1,5])^2))
+  rho16_RMSE = sqrt(mean((rho16_s - parameteters$corr.mat[1,6])^2))
+  rho23_RMSE = sqrt(mean((rho23_s - parameteters$corr.mat[2,3])^2))
+  rho24_RMSE = sqrt(mean((rho24_s - parameteters$corr.mat[2,4])^2))
+  rho25_RMSE = sqrt(mean((rho25_s - parameteters$corr.mat[2,5])^2))
+  rho26_RMSE = sqrt(mean((rho26_s - parameteters$corr.mat[2,6])^2))
+  rho34_RMSE = sqrt(mean((rho34_s - parameteters$corr.mat[3,4])^2))
+  rho35_RMSE = sqrt(mean((rho35_s - parameteters$corr.mat[3,5])^2))
+  rho36_RMSE = sqrt(mean((rho36_s - parameteters$corr.mat[3,6])^2))
+  rho45_RMSE = sqrt(mean((rho45_s - parameteters$corr.mat[4,5])^2))
+  rho46_RMSE = sqrt(mean((rho46_s - parameteters$corr.mat[4,6])^2))
+  rho56_RMSE = sqrt(mean((rho56_s - parameteters$corr.mat[5,6])^2))
+  RMSE_result = list(lambda1 = lambda1_RMSE, lambda2 = lambda2_RMSE, p1 = p1_RMSE, p2 = p2_RMSE,
+                   t11 = t11_RMSE, t21 = t21_RMSE, t31 = t31_RMSE,
+                   t12 = t12_RMSE, t22 = t22_RMSE, t32 = t32_RMSE,
+                   rho12 = rho12_RMSE, rho13 = rho13_RMSE, rho14 = rho14_RMSE, 
+                   rho15 = rho15_RMSE, rho16 = rho16_RMSE, rho23 = rho23_RMSE,
+                   rho24 = rho24_RMSE, rho25 = rho25_RMSE, rho26 = rho26_RMSE,
+                   rho34 = rho34_RMSE, rho35 = rho35_RMSE, rho36 = rho36_RMSE,
+                   rho45 = rho45_RMSE, rho46 = rho46_RMSE, rho56 = rho56_RMSE)  
  
 
 return(t11_mean)
