@@ -258,8 +258,8 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
   rho35_cover = as.numeric(parameteters$corr.mat[3,5] <= rho35_ci_high & parameteters$corr.mat[3,5] >= rho35_ci_low)
   rho36_cover = as.numeric(parameteters$corr.mat[3,6] <= rho36_ci_high & parameteters$corr.mat[3,6] >= rho36_ci_low)
   rho45_cover = as.numeric(parameteters$corr.mat[4,5] <= rho45_ci_high & parameteters$corr.mat[4,5] >= rho45_ci_low)
-  rho46_cover = as.numeric(parameteters$corr.mat[4,6] <= rho12_ci_high & parameteters$corr.mat[4,6] >= rho46_ci_low)
-  rho56_cover = as.numeric(parameteters$corr.mat[5,6] <= rho12_ci_high & parameteters$corr.mat[5,6] >= rho56_ci_low)
+  rho46_cover = as.numeric(parameteters$corr.mat[4,6] <= rho46_ci_high & parameteters$corr.mat[4,6] >= rho46_ci_low)
+  rho56_cover = as.numeric(parameteters$corr.mat[5,6] <= rho56_ci_high & parameteters$corr.mat[5,6] >= rho56_ci_low)
   result.matrix = cbind(lambda1_s, lambda1_ci_low, lambda1_ci_high, lambda1_cover,
                         lambda2_s, lambda2_ci_low, lambda2_ci_high, lambda2_cover,
                         p1_s, p1_ci_low, p1_ci_high, p1_cover, p2_s, p2_ci_low, p2_ci_high, p2_cover,
@@ -410,8 +410,13 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
   lambda2_RMSE = sqrt(mean((lambda2_s-parameteters$lambda.vec[2])^2))
   p1_RMSE = sqrt(mean((p1_s - parameteters$prop.vec[1])^2))
   p2_RMSE = sqrt(mean((p2_s - parameteters$prop.vec[2])^2))
-  t1_RMSE = sqrt(mean((c(t11_s, t21_s, t31_s) - c(unlist(parameteters$prop.list[1])))^2))
-  t2_RMSE = sqrt(mean((c(t12_s, t22_s, t32_s) - c(unlist(parameteters$prop.list[2])))^2))
+  t11_RMSE = sqrt(mean(t11_s - unlist(parameteters$prop.list[1])[1])^2)
+  t21_RMSE = sqrt(mean(t21_s - unlist(parameteters$prop.list[1])[2])^2)
+  t31_RMSE = sqrt(mean(t31_s - unlist(parameteters$prop.list[1])[3])^2)
+  t12_RMSE = sqrt(mean(t12_s - unlist(parameteters$prop.list[2])[1])^2)
+  t22_RMSE = sqrt(mean(t22_s - unlist(parameteters$prop.list[2])[2])^2)
+  t32_RMSE = sqrt(mean(t32_s - unlist(parameteters$prop.list[2])[3])^2)
+
   rho12_RMSE = sqrt(mean((rho12_s - parameteters$corr.mat[1,2])^2))
   rho13_RMSE = sqrt(mean((rho13_s - parameteters$corr.mat[1,3])^2))
   rho14_RMSE = sqrt(mean((rho14_s - parameteters$corr.mat[1,4])^2))
@@ -428,7 +433,8 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
   rho46_RMSE = sqrt(mean((rho46_s - parameteters$corr.mat[4,6])^2))
   rho56_RMSE = sqrt(mean((rho56_s - parameteters$corr.mat[5,6])^2))
   RMSE_result = list(lambda1 = lambda1_RMSE, lambda2 = lambda2_RMSE, p1 = p1_RMSE, p2 = p2_RMSE,
-                   t1 = t1_RMSE, t2 = t2_RMSE,
+                   t11 = t11_RMSE, t21 = t21_RMSE, t31 = t31_RMSE,
+                   t12 = t12_RMSE, t22 = t22_RMSE, t32 = t32_RMSE,
                    rho12 = rho12_RMSE, rho13 = rho13_RMSE, rho14 = rho14_RMSE, 
                    rho15 = rho15_RMSE, rho16 = rho16_RMSE, rho23 = rho23_RMSE,
                    rho24 = rho24_RMSE, rho25 = rho25_RMSE, rho26 = rho26_RMSE,
@@ -441,5 +447,8 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
 }
 
 result.test1 = simulation.function(para1, 100, n.sim = 1000)
+result.test2 = simulation.function(para1, 10000, n.sim = 1000)
+result.test9 = simulation.function(para2, 100, n.sim = 1000)
+result.test10 = simulation.function(para2, 10000, n.sim = 1000)
 ```
 
