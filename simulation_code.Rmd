@@ -75,7 +75,21 @@ correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL
 para1 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = corr.mat_W)
 
 # create parameter for weak corr, small and even parameters
-para2 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = corr.mat_M)
+para9 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = corr.mat_M)
+```
+
+```{r create true parameters not even}
+n.P = 2 # Number of Poisson variables
+n.B = 2 # Number of binary variables
+n.O = 2 # Number of ordinal variables
+lambda.vec = c(0.2, 0.7)# Rate vector for Poisson variables
+prop.vec=c(0.8, 0.9)                               # Probability vector for binary variables
+prop.list=list(c(0.65, 0.8, 0.9), c(0.5, 0.8, 0.95))
+
+# checks if there are range violations among pp, po, pb, bb, bo, oo combinations
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,corr.mat_W)
+# checks if there are range violations among pp, po, pb, bb, bo, oo combinations
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,corr.mat_M)
 ```
 
 ```{r simulation}
@@ -426,6 +440,6 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
   return(final_result)
 }
 
-result.test = simulation.function(para1, 100, n.sim = 2)
+result.test1 = simulation.function(para1, 100, n.sim = 1000)
 ```
 
