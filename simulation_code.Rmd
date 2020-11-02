@@ -335,8 +335,8 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
   lambda2_RB = ((lambda2_mean - parameteters$lambda.vec[2])/parameteters$lambda.vec[2])*100
   p1_RB = ((p1_mean - parameteters$prop.vec[1])/parameteters$prop.vec[1])*100
   p2_RB = ((p2_mean - parameteters$prop.vec[2])/parameteters$prop.vec[2])*100
-  t1_RB = ((c(t11_mean, t21_mean, t31_mean) - unlist(parameteters$prop.list[1]))/unlist(parameteters$prop.list[1]))*100
-  t2_RB = ((c(t12_mean, t22_mean, t32_mean) - unlist(parameteters$prop.list[2]))/unlist(parameteters$prop.list[2]))*100
+  t1_RB = ((c(t11_mean, t21_mean, t31_mean) - unlist(parameteters$prop.list[1]))/c(unlist(parameteters$prop.list[1])))*100
+  t2_RB = ((c(t12_mean, t22_mean, t32_mean) - unlist(parameteters$prop.list[2]))/c(unlist(parameteters$prop.list[2])))*100
   rho12_RB = ((rho12_mean - parameteters$corr.mat[1,2])/parameteters$corr.mat[1,2])*100
   rho13_RB = ((rho13_mean - parameteters$corr.mat[1,3])/parameteters$corr.mat[1,3])*100
   rho14_RB = ((rho14_mean - parameteters$corr.mat[1,4])/parameteters$corr.mat[1,4])*100
