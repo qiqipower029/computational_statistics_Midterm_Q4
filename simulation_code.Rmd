@@ -140,7 +140,7 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
                            final.corr.mat)
 
     lambda1.mean = mean(mymixdata[,1]); lambda1_s[i] = lambda1.mean
-    lambda2.mean = mean(mymixdata[,2]); lambda2_s[i] = lambda1.mean
+    lambda2.mean = mean(mymixdata[,2]); lambda2_s[i] = lambda2.mean
     p1.mean = mean(mymixdata[,3]); p1_s[i] = p1.mean
     p2.mean = mean(mymixdata[,4]); p2_s[i] = p2.mean
     t11.mean = length(mymixdata[,5][mymixdata[,5] == 0])/N; t11_s[i] = t11.mean
@@ -175,20 +175,20 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
     p1_ci_high[i] = p1.mean+1.96*sqrt(p1.mean*(1-p1.mean)/N)
     p2_ci_low[i] = p2.mean-1.96*sqrt(p2.mean*(1-p2.mean)/N)
     p2_ci_high[i] = p2.mean+1.96*sqrt(p2.mean*(1-p2.mean)/N)
-    t11_ci_low[i] = t11.mean-1.96*sqrt(t11.mean*(1-t11.mean)/N^2)
-    t11_ci_high[i] = t11.mean+1.96*sqrt(t11.mean*(1-t11.mean)/N^2)
+    t11_ci_low[i] = t11.mean-1.96*sqrt(t11.mean*(1-t11.mean)/N)
+    t11_ci_high[i] = t11.mean+1.96*sqrt(t11.mean*(1-t11.mean)/N)
     prop01 = t11.mean; prop11 = t21.mean-t11.mean; prop21 = t31.mean-t21.mean
     prop02 = t12.mean; prop12 = t22.mean-t12.mean; prop22 = t32.mean-t22.mean
-    t21_ci_low[i] = t21.mean-1.96*sqrt((prop01*(1-prop01)+prop11*(1-prop11)-2*prop01*prop11)/N^2)
-    t21_ci_high[i] = t21.mean+1.96*sqrt((prop01*(1-prop01)+prop11*(1-prop11)-2*prop01*prop11)/N^2)
-    t31_ci_low[i] = t31.mean-1.96*sqrt((prop01*(1-prop01)+prop11*(1-prop11)+prop21*(1-prop21)-2*prop01*prop11-2*prop11*prop21-2*prop01*prop21)/N^2)
-    t31_ci_high[i] = t31.mean+1.96*sqrt((prop01*(1-prop01)+prop11*(1-prop11)+prop21*(1-prop21)-2*prop01*prop11-2*prop11*prop21-2*prop01*prop21)/N^2)
-    t12_ci_low[i] = t12.mean-1.96*sqrt(t12.mean*(1-t12.mean)/N^2)
-    t12_ci_high[i] = t12.mean+1.96*sqrt(t12.mean*(1-t12.mean)/N^2)
-    t22_ci_low[i] = t22.mean-1.96*sqrt((prop02*(1-prop02)+prop12*(1-prop12)-2*prop02*prop12)/N^2)
-    t22_ci_high[i] = t22.mean+1.96*sqrt((prop02*(1-prop02)+prop12*(1-prop12)-2*prop02*prop12)/N^2)
-    t32_ci_low[i] = t32.mean-1.96*sqrt((prop02*(1-prop02)+prop12*(1-prop12)+prop22*(1-prop22)-2*prop02*prop12-2*prop12*prop22-2*prop02*prop22)/N^2)
-    t32_ci_high[i] = t32.mean+1.96*sqrt((prop02*(1-prop02)+prop12*(1-prop12)+prop22*(1-prop22)-2*prop02*prop12-2*prop12*prop22-2*prop02*prop22)/N^2)
+    t21_ci_low[i] = t21.mean-1.96*sqrt((prop01*(1-prop01)+prop11*(1-prop11)-2*prop01*prop11)/N)
+    t21_ci_high[i] = t21.mean+1.96*sqrt((prop01*(1-prop01)+prop11*(1-prop11)-2*prop01*prop11)/N)
+    t31_ci_low[i] = t31.mean-1.96*sqrt((prop01*(1-prop01)+prop11*(1-prop11)+prop21*(1-prop21)-2*prop01*prop11-2*prop11*prop21-2*prop01*prop21)/N)
+    t31_ci_high[i] = t31.mean+1.96*sqrt((prop01*(1-prop01)+prop11*(1-prop11)+prop21*(1-prop21)-2*prop01*prop11-2*prop11*prop21-2*prop01*prop21)/N)
+    t12_ci_low[i] = t12.mean-1.96*sqrt(t12.mean*(1-t12.mean)/N)
+    t12_ci_high[i] = t12.mean+1.96*sqrt(t12.mean*(1-t12.mean)/N)
+    t22_ci_low[i] = t22.mean-1.96*sqrt((prop02*(1-prop02)+prop12*(1-prop12)-2*prop02*prop12)/N)
+    t22_ci_high[i] = t22.mean+1.96*sqrt((prop02*(1-prop02)+prop12*(1-prop12)-2*prop02*prop12)/N)
+    t32_ci_low[i] = t32.mean-1.96*sqrt((prop02*(1-prop02)+prop12*(1-prop12)+prop22*(1-prop22)-2*prop02*prop12-2*prop12*prop22-2*prop02*prop22)/N)
+    t32_ci_high[i] = t32.mean+1.96*sqrt((prop02*(1-prop02)+prop12*(1-prop12)+prop22*(1-prop22)-2*prop02*prop12-2*prop12*prop22-2*prop02*prop22)/N)
     rho12_ci_high[i] = CI_high_cal_rho(correlation[1,2], N)
     rho12_ci_low[i] = CI_low_cal_rho(correlation[1,2], N)
     rho13_ci_high[i] = CI_high_cal_rho(correlation[1,3], N)
@@ -426,6 +426,6 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
   return(final_result)
 }
 
-result.test = simulation.function(para1, 100, n.sim = 5)
+result.test = simulation.function(para1, 100, n.sim = 20)
 ```
 
