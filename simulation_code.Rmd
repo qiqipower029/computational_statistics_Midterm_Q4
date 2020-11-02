@@ -160,7 +160,7 @@ simulation.function = function(parameteters, N, n.sim = 1000) {
     t11.mean = length(mymixdata[,5][mymixdata[,5] == 0])/N; t11_s[i] = t11.mean
     t21.mean = length(mymixdata[,5][mymixdata[,5] <= 1])/N; t21_s[i] = t21.mean
     t31.mean = length(mymixdata[,5][mymixdata[,5] <= 2])/N; t31_s[i] = t31.mean
-    t12.mean = length(mymixdata[,6][mymixdata[,5] == 0])/N; t12_s[i] = t12.mean
+    t12.mean = length(mymixdata[,6][mymixdata[,6] == 0])/N; t12_s[i] = t12.mean
     t22.mean = length(mymixdata[,6][mymixdata[,6] <= 1])/N; t22_s[i] = t22.mean
     t32.mean = length(mymixdata[,6][mymixdata[,6] <= 2])/N; t32_s[i] = t32.mean
     correlation = cor(mymixdata)
