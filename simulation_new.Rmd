@@ -88,29 +88,31 @@ CI_low_cal_rho = function(r, N) {
   CI_low = (exp(2*CL)-1)/(exp(2*CL)+1)
   return(CI_low)
 }
+
+
 ```
 
 ```{r create simulation function}
 # Computes the final intermediate correlation matrix, SIGMA*
 final.corr.mat = overall.corr.mat(n.P, n.B, n.O, lambda.vec, prop.vec, prop.list, corr.vec=NULL, corr.mat_W)
-para$final.corr.mat  = final.corr.mat
+para1$final.corr.mat  = final.corr.mat
 
 simulation.function = function(para, samplesize, n.sim) {
     mymixdata = list(); para_esti=list(); para_true = list(); para_LCI = list(); para_UCI = list()
     
     # Computes the final intermediate correlation matrix, SIGMA*
-    final.corr.mat = overall.corr.mat(para$n.P, para$n.B, para$n.O,para$lambda.vec,para1$prop.vec,para$prop.list, corr.vec=NULL, para$corr.mat)
+    final.corr.mat = overall.corr.mat(para[[1]], para[[2]], para[[3]], para$lambda.vec,para1$prop.vec,para$prop.list, corr.vec=NULL, para$corr.mat)
     para$final.corr.mat  = final.corr.mat
  
   for (i in 1:n.sim) {
     # Generate mixed data
-    mymixdata[[i]] = gen.PoisBinOrd(n = samplesize, n.P = para$n.P, n.B = para$n.B, n.O = para$n.O,
+    mymixdata[[i]] = gen.PoisBinOrd(n = samplesize, n.P = para[[1]], n.B = para[[2]], n.O = para[[3]],
                                lambda.vec = para$lambda.vec, prop.vec = para$prop.vec, prop.list = para$prop.list, 
                                final.corr.mat = para$final.corr.mat)
     # Poisson
     para_poi     = apply(mymixdata[[i]], MARGIN = 2, mean)[1:2] # Poisson Mean = Poisson Variance
-    para_poi_LCI = para_poi - 1.96*sqrt(para_poi / samplesize)
-    para_poi_UCI = para_poi + 1.96*sqrt(para_poi / samplesize)
+    para_poi_LCI = (-1.96*sqrt(1/(4*samplesize)) + sqrt(para_poi))^2
+    para_poi_UCI = (1.96*sqrt(1/(4*samplesize)) + sqrt(para_poi))^2
     
     # Binary
     para_bin     = apply(mymixdata[[i]], MARGIN = 2, mean)[3:4]
@@ -146,7 +148,7 @@ simulation.function = function(para, samplesize, n.sim) {
     
     # Output
     para_esti[[i]] = as.vector(c(para_poi,para_bin,  para_ordi, corr_f))
-    para_true[[i]] = c(para$lambda.vec, para$prop.vec, unlist(para$prop.list),  to.upper(para$final.corr.mat)[c(2:6, 8:11, 13:15, 17:18, 20)])
+    para_true[[i]] = c(para$lambda.vec, para$prop.vec, unlist(para$prop.list),  to.upper(para$corr.mat)[c(2:6, 8:11, 13:15, 17:18, 20)])
     para_LCI[[i]] = c(para_poi_LCI, para_bin_LCI, para_ordi_LCI1, para_ordi_LCI2, para_ordi_LCI3,  CI_low_cal_rho(corr_f , samplesize) )
     para_UCI[[i]] = c(para_poi_UCI, para_bin_UCI, para_ordi_UCI1, para_ordi_UCI2, para_ordi_UCI3, CI_high_cal_rho(corr_f , samplesize) )
   }
@@ -166,10 +168,10 @@ simulation.function = function(para, samplesize, n.sim) {
 # Confidence Interval 
   LCI = matrix( unlist(para_LCI), nrow=n.sim, byrow=TRUE)
   UCI = matrix( unlist(para_UCI), nrow=n.sim, byrow=TRUE)
-  para_true_forCI = c(para$lambda.vec, para$prop.vec, unlist(para$prop.list)[c(1,4,2,5,3,6)], to.upper(para$final.corr.mat)[c(2:6, 8:11, 13:15, 17:18, 20)])
+  para_true_forCI = c(para$lambda.vec, para$prop.vec, unlist(para$prop.list)[c(1,4,2,5,3,6)], to.upper(para$corr.mat)[c(2:6, 8:11, 13:15, 17:18, 20)])
   Para_True_forCI = matrix(rep(para_true_forCI,n.sim), nrow=n.sim, byrow=TRUE)
   
-  CR = apply(  ifelse( ( Para_True_forCI - LCI > 0) & (UCI - Para_True_forCI > 0),1,0 )   ,  MARGIN =2, sum)  / n.sim
+  CR = apply(  ifelse( ( Para_True_forCI - LCI >= 0) & (UCI - Para_True_forCI >= 0),1,0 )   ,  MARGIN =2, sum)  / n.sim
   CR = CR[c(1:4, 5,8, 6,9, 7,10, 11:25)]
 
   inference = data.frame(Para_True      = round(theta_true,4),
@@ -177,12 +179,16 @@ simulation.function = function(para, samplesize, n.sim) {
               Para_Esti_SD   = round(theta_esti_sd,4),
               RB             = round(RB,4),            
               SB             = round(SB,4), 
-              RMSE           = round(RMSE,4))
+              RMSE           = round(RMSE,4),
+              CR             = round(CR, 4))
+  rownames(inference) = c("lambda1", "lambda2", "p1", "p2", "t11", "t21", "t31", "t12", "t22", "t32",
+                          "rho12", "rho13", "rho14", "rho15", "rho16", "rho23", "rho24", "rho25", "rho26",
+                          "rho34", "rho35", "rho36", "rho45", "rho46", "rho56")
   
   
-  return(list(result=inference, CR=CR) )
-          
+  return(inference)
 }
 
+simulation.function(para1, 100, 1000)
 ```
 
