@@ -1,0 +1,70 @@
+---
+title: "simulation_new"
+author: "Jieqi Tu"
+date: "11/2/2020"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(PoisBinOrd)
+```
+
+```{r correlation selection function}
+create_corr = function(n.P,n.B,n.O ,lambda.vec, prop.vec, prop.list){
+  CorrLimit = correlation.limits(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list)
+  to.upper = function(X) X[lower.tri(X,diag=TRUE)]
+  to.lower = function(X) X[upper.tri(X,diag=TRUE)]
+  upper  = as.vector(na.omit(to.upper(t(CorrLimit))))
+  lower = as.vector(na.omit(to.lower(t(CorrLimit))))
+  
+  corr = list()
+  for (i in 1:length(upper)){
+    corr[[i]] = runif(n = 1, min = lower[i], max = upper[i])}
+  
+  M = unlist(corr)
+  N = diag(n.P + n.B + n.O)  
+  N[lower.tri(N)] = M 
+  corr.mat = N+t(N)   
+  diag(corr.mat) = 1   
+  corr.mat
+  
+  return(  list(  CorrLimit = CorrLimit, 
+                  final_corr = data.frame(lower=lower, final_corr=unlist(corr), upper=upper),
+                  corr.mat = corr.mat
+                 ))
+}
+
+create_corr(n.P = 2,n.B = 2,n.O = 2 ,lambda.vec = c(2,7),prop.vec = c(0.8,0.9),prop.list = list(c(0.65,0.8,0.9),c(0.5,0.8,0.95)))
+```
+
+```{r create very weak correlation matrix SIGMA}
+# very weak correlation
+set.seed(5)
+W_Corr = runif(n=15, min = 0.001,max = 0.199)
+W_PN_Indicator = sample(c(-1,1), size = 15, replace = TRUE)
+W_Corr_Final = W_Corr*W_PN_Indicator
+W_Corr_Final
+
+# Create overall correlation matrix, SIGMA
+M = W_Corr_Final
+N = diag(6)  
+N[lower.tri(N)] = M  # lower triangle 
+corr.mat_W = N+t(N)    # symmetric matrix
+diag(corr.mat_W) = 1   
+corr.mat_W
+
+# Validates the specified correlation matrix
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,corr.mat_W)
+
+# checks if there are range violations among pp, po, pb, bb, bo, oo combinations
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,corr.mat_W)
+```
+
+```{r create parameter for scenario 1 and 2}
+
+```
+
