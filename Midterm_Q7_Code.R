@@ -5,7 +5,8 @@
 require(PoisBinOrdNonNor)
 require(moments)
 
-# Function to computepercentage estimates for ordinal variable
+# ----------- Functions to calculate estimates and CI--------------# 
+# Function to compute percentage estimates for ordinal variable
 ord.est = function(data, n.obs){
     per_table = data.frame(cumsum(table(data))/n.obs)
     per_table[1:3,1]
@@ -25,11 +26,11 @@ ord.ci.f = function(est, n.obs){
     p0 = est[1]
     p1 = est[2] - p0
     p2 = est[3] - est[2]
-    p0.ci = c(-1.96, 1.96)*sqrt(p0*(1 - p0)/n.obs) + p0 
-    p1.ci = c(-1.96, 1.96)*sqrt((p0*(1 - p0) + p1*(1 - p1) - 2*p0*p1)/n.obs) + p0 + p1
-    p2.ci = c(-1.96, 1.96)*sqrt((p0*(1 - p0) + p1*(1 - p1) + 
+    t0.ci = c(-1.96, 1.96)*sqrt(p0*(1 - p0)/n.obs) + p0 
+    t1.ci = c(-1.96, 1.96)*sqrt((p0*(1 - p0) + p1*(1 - p1) - 2*p0*p1)/n.obs) + p0 + p1
+    t2.ci = c(-1.96, 1.96)*sqrt((p0*(1 - p0) + p1*(1 - p1) + 
                                      p2*(1 - p2) - 2*p0*p1 - 2*p1*p2 - 2*p0*p2)/n.obs) + p0 + p1 + p2
-    list(p0.ci, p1.ci, p2.ci)
+    list(t0.ci, t1.ci, t2.ci)
 }
 # Correlation 95% CI (Fisher Transformation)
 cor.ci.f = function(rho, n.obs){
@@ -38,13 +39,40 @@ cor.ci.f = function(rho, n.obs){
 }
 
 
-
+# ----------- Generate random correlation matrix within boundaries--------------# 
+gen.corr = function(seed, no.pois, no.bin, no.ord, no.nonn,
+                    pois.list, bin.list, ord.list, 
+                    is.ord.list.cum, nonn.list){
+    set.seed(seed)
+    
+    # Calculates the approximate upper and lower correlation bounds
+    re = lower.upper.cors(no.pois, no.bin, no.ord, no.nonn,
+                          pois.list, bin.list, ord.list, 
+                          is.ord.list.cum, nonn.list)
+    L = re$min[upper.tri(re$min)]
+    U = re$max[upper.tri(re$max)]
+    
+    # Generate one correlation matrix within bounds
+    stat = F
+    while (stat == F) {
+        rho = numeric(length(L))
+        for (i in 1:length(L)) {
+            rho[i] = runif(1, L[i], U[i])
+        }
+        cor.mat = matrix(0, nrow = 8, ncol = 8)
+        cor.mat[upper.tri(cor.mat)] = rho
+        cor.mat = cor.mat + t(cor.mat) + diag(1,8)
+        diag(cor.mat) = 1
+        stat = is.positive.definite(cor.mat)
+    }
+    return(cor.mat)
+}
 
 # ----------- Create a simmulation function--------------# 
-
 PoisBinOrdNonNor.sim = function(seed, n.obs, cor.mat, no.pois, no.bin, no.ord, 
                                 no.nonn, pois.list, bin.list, 
                                 ord.list, is.ord.list.cum, nonn.list) {
+    set.seed(seed)
     
     TV = c(unlist(pois.list), 1 - unlist(bin.list), unlist(ord.list), cor.mat[upper.tri(cor.mat)])
     
@@ -78,7 +106,7 @@ PoisBinOrdNonNor.sim = function(seed, n.obs, cor.mat, no.pois, no.bin, no.ord,
         
         # Caculate estimates and 95% for all correlation
         est.cor = cor(data)
-        est.cor.vec = est.cor[upper.tri(est.cor)]
+        est.cor.vec = est.cor[upper.tri(est.cor)] # only upper traingle
         ci.cor = sapply(est.cor.vec, cor.ci.f, n.obs)
         
         # Organize Results
@@ -100,8 +128,8 @@ PoisBinOrdNonNor.sim = function(seed, n.obs, cor.mat, no.pois, no.bin, no.ord,
     # Summarize Result
     AE = apply(est_m, 2, mean)
     sd = apply(est_m, 2, sd)
-    RB = (TV - AE)*100/TV
-    SB = abs(TV - AE)/sd*100
+    RB = (AE - TV)*100/TV
+    SB = abs(AE - TV)/sd*100
     RMSE = sqrt(apply((est_m - TV)^2, 2, mean))
     CR = apply(cover_m,2,mean)
     
@@ -109,6 +137,7 @@ PoisBinOrdNonNor.sim = function(seed, n.obs, cor.mat, no.pois, no.bin, no.ord,
         TV = TV,
         AE = round(AE, 4),
         RB = round(RB, 4),
+        SB = round(SB, 4),
         RMSE = round(RMSE, 4),
         CR = round(CR, 4)
     )
@@ -118,14 +147,13 @@ PoisBinOrdNonNor.sim = function(seed, n.obs, cor.mat, no.pois, no.bin, no.ord,
 # haven't calculated skewness and kurtosis (No CR) add later
 
 
-# ----------- Example--------------# 
+# ----------- Setting 1. --------------# 
 
 # Input variables
 seed = 123
 set.seed(seed)
 n.obs = 100
 n.sim = 1000
-cor.mat = .8 * diag(8) + .2
 no.pois = 2
 no.bin = 2
 no.ord = 2
@@ -135,20 +163,25 @@ bin.list = list(.3, .6) # !!! percentage for 0
 ord.list = list(c(.1, .2, .3), c(.4, .5, .7))
 is.ord.list.cum = T
 nonn.list = list(c(-1, 1, 0, 1), c(0, 3, 0, 2))
+cor.mat = diag(0.8, 8) + 0.2
 
 # Validates The Target Correlation Matrix
 check = validate.cor.mat(cor.mat, no.pois, no.bin, no.ord, 
                          no.nonn, pois.list, bin.list, 
                          ord.list, is.ord.list.cum, nonn.list)
 # Simulation
-
 PoisBinOrdNonNor.sim(seed, n.obs, cor.mat, no.pois, no.bin, no.ord, 
                                 no.nonn, pois.list, bin.list, 
                                 ord.list, is.ord.list.cum, nonn.list) 
 
 # At least for this setting everything works well.
 
-# Later build a function to randomly generate correlation matrix
-# (1) Uniform(L,U)
-# (2) test if it's psd
-# (3) if it's not, using r function to find close psd
+# Q1 package problem upper bounds is not symmetric (wrong code .make.sym.matrix)
+# Q2 continuous variables (estimates for mean var skew kurtosis? or just v1 v2)
+# Q3 nearPD will produce matrix where diagonal >1
+
+
+
+
+
+
