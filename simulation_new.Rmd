@@ -69,7 +69,7 @@ gen.corr = function(seed, n.P, n.B, n.O,
     return(cor.mat)
 }
 
-gen.corr(5, n.P, n.B, n.O, lambda.vec, prop.vec, prop.list)
+
 ```
 
 ```{r create very weak correlation matrix SIGMA}
@@ -95,16 +95,40 @@ validation.corr(n.P,n.B,n.O,corr.vec=NULL,corr.mat_W)
 correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,corr.mat_W)
 ```
 
-```{r create parameter for scenario 1 and 2}
-# small marginal poisson rates, even marginal binary and orinal
+```{r create parameters}
+# scenario 3 & 4 & 7 & 8
+n.P = 2 # Number of Poisson variables
+n.B = 2 # Number of binary variables
+n.O = 2 # Number of ordinal variables
+lambda.vec = c(0.2, 0.7)# Rate vector for Poisson variables
+prop.vec=c(0.80, 0.90)                               # Probability vector for binary variables
+prop.list=list(c(0.65, 0.80, 0.90), c(0.50, 0.80, 0.95))  # A list of probability vectors for ordinal variables. (cdf-cutoff)
+
+A = gen.corr(1, n.P, n.B, n.O, lambda.vec, prop.vec, prop.list)
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,A)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A)
+B = gen.corr(3, n.P, n.B, n.O, lambda.vec, prop.vec, prop.list)
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,B)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,B)
+
+para34 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A)
+para78 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = B)
+
+# scenario 1 & 2 & 5 & 6
 n.P = 2 # Number of Poisson variables
 n.B = 2 # Number of binary variables
 n.O = 2 # Number of ordinal variables
 lambda.vec = c(0.2, 0.7)# Rate vector for Poisson variables
 prop.vec=c(0.55, 0.45)                               # Probability vector for binary variables
 prop.list=list(c(0.25, 0.5, 0.75), c(0.20, 0.45, 0.75))  # A list of probability vectors for ordinal variables. (cdf-cutoff)
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,A)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A)
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,B)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,B)
 
-para1 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = corr.mat_W)
+para12 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A)
+para56 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = B)
+
 ```
 
 ```{r create function to calculate CI for rho}
@@ -119,8 +143,6 @@ CI_low_cal_rho = function(r, N) {
   CI_low = (exp(2*CL)-1)/(exp(2*CL)+1)
   return(CI_low)
 }
-
-
 ```
 
 ```{r create simulation function}
