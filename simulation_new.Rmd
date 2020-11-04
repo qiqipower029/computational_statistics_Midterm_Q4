@@ -41,6 +41,37 @@ create_corr = function(n.P,n.B,n.O ,lambda.vec, prop.vec, prop.list){
 create_corr(n.P = 2,n.B = 2,n.O = 2 ,lambda.vec = c(2,7),prop.vec = c(0.8,0.9),prop.list = list(c(0.65,0.8,0.9),c(0.5,0.8,0.95)))
 ```
 
+```{r creating correlation matrix function}
+# ----------- Generate random correlation matrix within boundaries--------------# 
+gen.corr = function(seed, n.P, n.B, n.O,
+                    lambda.vec, prop.vec, prop.list) {
+    set.seed(seed)
+    
+    # Calculates the approximate upper and lower correlation bounds
+    re = correlation.limits(n.P, n.B, n.O, lambda.vec,prop.vec,prop.list)
+    
+    L = re[lower.tri(re)] %>% as.vector()
+    U = re[upper.tri(re)] %>% as.vector()
+    
+    # Generate one correlation matrix within bounds
+    stat = F
+    while (stat == F) {
+        rho = numeric(length(L))
+        for (i in 1:length(L)) {
+            rho[i] = runif(1, L[i], U[i])
+        }
+        cor.mat = matrix(0, nrow = 6, ncol = 6)
+        cor.mat[upper.tri(cor.mat)] = rho
+        cor.mat = cor.mat + t(cor.mat) + diag(1,6)
+        diag(cor.mat) = 1
+        stat = is.positive.definite(cor.mat)
+    }
+    return(cor.mat)
+}
+
+gen.corr(5, n.P, n.B, n.O, lambda.vec, prop.vec, prop.list)
+```
+
 ```{r create very weak correlation matrix SIGMA}
 # very weak correlation
 set.seed(5)
