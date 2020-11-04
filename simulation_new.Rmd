@@ -87,6 +87,25 @@ N[lower.tri(N)] = M  # lower triangle
 corr.mat_W = N+t(N)    # symmetric matrix
 diag(corr.mat_W) = 1   
 corr.mat_W
+corr.mat_W[1,4] = 0.1225414
+corr.mat_W[4,1] = 0.1225414
+A = corr.mat_W
+
+set.seed(1029)
+W_Corr = runif(n=15, min = 0.001,max = 0.199)
+W_PN_Indicator = sample(c(-1,1), size = 15, replace = TRUE)
+W_Corr_Final = W_Corr*W_PN_Indicator
+W_Corr_Final
+
+# Create overall correlation matrix, SIGMA
+M = W_Corr_Final
+N = diag(6)  
+N[lower.tri(N)] = M  # lower triangle 
+corr.mat_W = N+t(N)    # symmetric matrix
+diag(corr.mat_W) = 1   
+corr.mat_W
+B = corr.mat_W
+
 
 # Validates the specified correlation matrix
 validation.corr(n.P,n.B,n.O,corr.vec=NULL,corr.mat_W)
@@ -102,12 +121,9 @@ n.B = 2 # Number of binary variables
 n.O = 2 # Number of ordinal variables
 lambda.vec = c(0.2, 0.7)# Rate vector for Poisson variables
 prop.vec=c(0.80, 0.90)                               # Probability vector for binary variables
-prop.list=list(c(0.65, 0.80, 0.90), c(0.50, 0.80, 0.95))  # A list of probability vectors for ordinal variables. (cdf-cutoff)
-
-A = gen.corr(1, n.P, n.B, n.O, lambda.vec, prop.vec, prop.list)
+prop.list=list(c(0.65, 0.80, 0.90), c(0.50, 0.80, 0.90))  # A list of probability vectors for ordinal variables. (cdf-cutoff)
 validation.corr(n.P,n.B,n.O,corr.vec=NULL,A)
 correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A)
-B = gen.corr(3, n.P, n.B, n.O, lambda.vec, prop.vec, prop.list)
 validation.corr(n.P,n.B,n.O,corr.vec=NULL,B)
 correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,B)
 
@@ -146,15 +162,11 @@ CI_low_cal_rho = function(r, N) {
 ```
 
 ```{r create simulation function}
-# Computes the final intermediate correlation matrix, SIGMA*
-final.corr.mat = overall.corr.mat(n.P, n.B, n.O, lambda.vec, prop.vec, prop.list, corr.vec=NULL, corr.mat_W)
-para1$final.corr.mat  = final.corr.mat
-
 simulation.function = function(para, samplesize, n.sim) {
     mymixdata = list(); para_esti=list(); para_true = list(); para_LCI = list(); para_UCI = list()
     
     # Computes the final intermediate correlation matrix, SIGMA*
-    final.corr.mat = overall.corr.mat(para[[1]], para[[2]], para[[3]], para$lambda.vec,para1$prop.vec,para$prop.list, corr.vec=NULL, para$corr.mat)
+    final.corr.mat = overall.corr.mat(para[[1]], para[[2]], para[[3]], para$lambda.vec,para$prop.vec,para$prop.list, corr.vec=NULL, para$corr.mat)
     para$final.corr.mat  = final.corr.mat
  
   for (i in 1:n.sim) {
@@ -242,6 +254,33 @@ simulation.function = function(para, samplesize, n.sim) {
   return(inference)
 }
 
-simulation.function(para1, 100, 1000)
+```
+
+```{r check the results}
+# scenario 1
+result1 = simulation.function(para12, 100, n.sim = 1000);result1
+write.csv(result1, file = "result1.csv")
+# scenario 2
+result2 = simulation.function(para12, 10000, n.sim = 1000); result2
+write.csv(result2, file = "result2.csv")
+# scenario 3
+result3 = simulation.function(para34, 100, n.sim = 1000); result3
+write.csv(result3, file = "result3.csv")
+# scenario 4
+result4 = simulation.function(para34, 10000, n.sim = 1000); result4
+write.csv(result4, file = "result4.csv")
+
+# scenario 5
+result5 = simulation.function(para56, 100, n.sim = 1000); result5
+write.csv(result5, file = "result5.csv")
+# scenario 6
+result6 = simulation.function(para56, 10000, n.sim = 1000); result6
+write.csv(result6, file = "result6.csv")
+# scenario 7
+result7 = simulation.function(para78, 100, n.sim = 1000); result7
+write.csv(result6, file = "result6.csv")
+# scenario 8
+result8 = simulation.function(para78, 10000, n.sim = 1000); result8
+write.csv(result8, file = "result8.csv")
 ```
 
