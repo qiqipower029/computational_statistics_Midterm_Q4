@@ -1,0 +1,268 @@
+---
+title: "simulation_new"
+author: "Jieqi Tu"
+date: "11/2/2020"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(PoisBinOrd)
+library(openxlsx)    # Output Excel with multiple sheets
+```
+
+```{r create very weak correlation matrix SIGMA}
+# ----------- Generate random correlation matrix within boundaries--------------# 
+gen.corr = function(seed, n.P, n.B, n.O,
+                    lambda.vec, prop.vec, prop.list) {
+    set.seed(seed)
+    
+    # Calculates the approximate upper and lower correlation bounds
+    re = correlation.limits(n.P, n.B, n.O, lambda.vec,prop.vec,prop.list)
+    
+    L = re[lower.tri(re)] %>% as.vector()
+    U = re[upper.tri(re)] %>% as.vector()
+    
+    # Generate one correlation matrix within bounds
+    stat = F
+    while (stat == F) {
+        rho = numeric(length(L))
+        for (i in 1:length(L)) {
+            rho[i] = runif(1, L[i], U[i])
+        }
+        cor.mat = matrix(0, nrow = 6, ncol = 6)
+        cor.mat[upper.tri(cor.mat)] = rho
+        cor.mat = cor.mat + t(cor.mat) + diag(1,6)
+        diag(cor.mat) = 1
+        stat = is.positive.definite(cor.mat)
+    }
+    return(cor.mat)
+}
+
+
+# very weak correlation
+set.seed(1029)
+W_Corr = runif(n=15, min = 0.001,max = 0.199)
+W_PN_Indicator = sample(c(-1,1), size = 15, replace = TRUE)
+W_Corr_Final = W_Corr*W_PN_Indicator
+
+# Create overall correlation matrix, SIGMA
+M = W_Corr_Final
+N = diag(6)  
+N[lower.tri(N)] = M  # lower triangle 
+corr.mat_W = N+t(N)    # symmetric matrix
+diag(corr.mat_W) = 1   
+B = corr.mat_W
+B
+```
+
+```{r create parameters}
+n.P = 2 # Number of Poisson variables
+n.B = 2 # Number of binary variables
+n.O = 2 # Number of ordinal variables
+
+# scenario = large rate Poisson + balanced binary/ordinal
+lambda.vec = c(2, 7)
+prop.vec=c(0.45, 0.50)                              
+prop.list=list(c(0.25, 0.50, 0.75), c(0.20, 0.45, 0.75))  
+A1 = gen.corr(seed=1,n.P=n.P, n.B=n.B, n.O=n.O,
+             lambda.vec=lambda.vec, prop.vec=prop.vec, prop.list =prop.list)
+A1
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,A1)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A1)
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,B)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,B)
+
+para_0102 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A1)
+para_0304 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = B)
+
+# scenario = large rate Poisson + imbalanced binary/ordinal
+lambda.vec = c(2, 7)
+prop.vec=c(0.80, 0.90)                              
+prop.list=list(c(0.65, 0.80, 0.90), c(0.50, 0.80, 0.90))  
+A2 = gen.corr(seed=1,n.P=n.P, n.B=n.B, n.O=n.O,
+             lambda.vec=lambda.vec, prop.vec=prop.vec, prop.list =prop.list)
+A2
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,A2)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A2)
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,B)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,B)
+
+para_0506 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A2)
+para_0708 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = B)
+
+
+# scenario  = small rate Poisson + balanced binary/ordinal
+lambda.vec = c(0.2, 0.7)
+prop.vec=c(0.45, 0.50)                                
+prop.list=list(c(0.25, 0.50, 0.75), c(0.20, 0.45, 0.75)) 
+A3 = gen.corr(seed=1,n.P=n.P, n.B=n.B, n.O=n.O,
+             lambda.vec=lambda.vec, prop.vec=prop.vec, prop.list =prop.list)
+A3
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,A3)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A3)
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,B)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,B)
+
+para_0910 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A3)
+para_1112 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = B)
+
+# scenario = small rate Poisson + imbalanced binary/ordinal
+lambda.vec = c(0.2, 0.7)
+prop.vec=c(0.80, 0.90)                               
+prop.list=list(c(0.65, 0.80, 0.90), c(0.50, 0.80, 0.90))
+A4 = gen.corr(seed=1,n.P=n.P, n.B=n.B, n.O=n.O,
+              lambda.vec=lambda.vec, prop.vec=prop.vec, prop.list =prop.list)
+A4
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,A4)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A4)
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,B)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,B)
+
+para_1314 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A4)
+para_1516 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = B)
+```
+
+```{r create function to calculate CI for rho}
+# Create function to calculate CI for rhos
+CI_high_cal_rho = function(r, N) {
+  CU = 0.5*log((1+r)/(1-r)) + 1.96*sqrt(1/N)
+  CI_high = (exp(2*CU)-1)/(exp(2*CU)+1)
+  return(CI_high)
+}
+CI_low_cal_rho = function(r, N) {
+  CL = 0.5*log((1+r)/(1-r)) - 1.96*sqrt(1/N)
+  CI_low = (exp(2*CL)-1)/(exp(2*CL)+1)
+  return(CI_low)
+}
+```
+
+```{r create simulation function}
+simulation.function = function(para, samplesize, n.sim) {
+    mymixdata = list(); para_esti=list(); para_true = list(); para_LCI = list(); para_UCI = list()
+    
+    # Computes the final intermediate correlation matrix, SIGMA*
+    final.corr.mat = overall.corr.mat(para[[1]], para[[2]], para[[3]], para$lambda.vec,para$prop.vec,para$prop.list, corr.vec=NULL, para$corr.mat)
+    para$final.corr.mat  = final.corr.mat
+ 
+  for (i in 1:n.sim) {
+    # Generate mixed data
+    mymixdata[[i]] = gen.PoisBinOrd(n = samplesize, n.P = para[[1]], n.B = para[[2]], n.O = para[[3]],
+                               lambda.vec = para$lambda.vec, prop.vec = para$prop.vec, prop.list = para$prop.list, 
+                               final.corr.mat = para$final.corr.mat)
+    # Poisson
+    para_poi     = apply(mymixdata[[i]], MARGIN = 2, mean)[1:2] # Poisson Mean = Poisson Variance
+    para_poi_LCI = (-1.96*sqrt(1/(4*samplesize)) + sqrt(para_poi))^2
+    para_poi_UCI = (1.96*sqrt(1/(4*samplesize)) + sqrt(para_poi))^2
+    
+    # Binary
+    para_bin     = apply(mymixdata[[i]], MARGIN = 2, mean)[3:4]
+    para_bin_LCI = para_bin - 1.96*sqrt(para_bin*(1-para_bin) / samplesize)
+    para_bin_UCI = para_bin + 1.96*sqrt(para_bin*(1-para_bin) / samplesize)
+    
+    # Ordinal
+    para_ordi = c(  cumsum( table(mymixdata[[i]][,5]))[1:3], cumsum( table(mymixdata[[i]][,6]))[1:3]  ) / samplesize # cumu proportion
+    para_ordi_prop0 = c(   table(mymixdata[[i]][,5])[1], table(mymixdata[[i]][,6])[1]  ) / samplesize
+    para_ordi_prop1 = c(   table(mymixdata[[i]][,5])[2], table(mymixdata[[i]][,6])[2]  ) / samplesize
+    para_ordi_prop2 = c(   table(mymixdata[[i]][,5])[3], table(mymixdata[[i]][,6])[3]  ) / samplesize
+    para_ordi_prop3 = c(   table(mymixdata[[i]][,5])[4], table(mymixdata[[i]][,6])[4]  ) / samplesize
+    
+    para_ordi_LCI1 = para_ordi[c(1,4)] - 1.96*sqrt(  para_ordi_prop0*(1-para_ordi_prop0)  /samplesize )
+    para_ordi_LCI2 = para_ordi[c(2,5)] - 
+                     1.96*sqrt(  (  para_ordi_prop0*(1-para_ordi_prop0) + para_ordi_prop1*(1-para_ordi_prop1) - 2*para_ordi_prop0*para_ordi_prop1  ) /samplesize )
+    para_ordi_LCI3 = para_ordi[c(3,6)] - 
+                     1.96*sqrt(  (     para_ordi_prop0*(1-para_ordi_prop0) +   para_ordi_prop1*(1-para_ordi_prop1) +   para_ordi_prop2*(1-para_ordi_prop2) 
+                                   - 2*para_ordi_prop0*para_ordi_prop1     - 2*para_ordi_prop0*para_ordi_prop2     - 2*para_ordi_prop1*para_ordi_prop2) /samplesize )
+    
+    
+    para_ordi_UCI1 = para_ordi[c(1,4)] + 1.96*sqrt(  para_ordi_prop0*(1-para_ordi_prop0)  /samplesize )
+    para_ordi_UCI2 = para_ordi[c(2,5)] + 
+                     1.96*sqrt(  (  para_ordi_prop0*(1-para_ordi_prop0) + para_ordi_prop1*(1-para_ordi_prop1) - 2*para_ordi_prop0*para_ordi_prop1  ) /samplesize )
+    para_ordi_UCI3 = para_ordi[c(3,6)] + 
+                     1.96*sqrt(  (     para_ordi_prop0*(1-para_ordi_prop0) +   para_ordi_prop1*(1-para_ordi_prop1) +   para_ordi_prop2*(1-para_ordi_prop2) 
+                                   - 2*para_ordi_prop0*para_ordi_prop1     - 2*para_ordi_prop0*para_ordi_prop2     - 2*para_ordi_prop1*para_ordi_prop2) /samplesize )
+    # Correlation
+    corr = cor(mymixdata[[i]])
+    to.upper = function(X) X[lower.tri(X,diag=TRUE)]
+    corr_f = to.upper(corr)[c(2:6, 8:11, 13:15, 17:18, 20)]
+    
+    
+    # Output
+    para_esti[[i]] = as.vector(c(para_poi,para_bin,  para_ordi, corr_f))
+    para_true[[i]] = c(para$lambda.vec, para$prop.vec, unlist(para$prop.list),  to.upper(para$corr.mat)[c(2:6, 8:11, 13:15, 17:18, 20)])
+    para_LCI[[i]] = c(para_poi_LCI, para_bin_LCI, para_ordi_LCI1, para_ordi_LCI2, para_ordi_LCI3,  CI_low_cal_rho(corr_f , samplesize) )
+    para_UCI[[i]] = c(para_poi_UCI, para_bin_UCI, para_ordi_UCI1, para_ordi_UCI2, para_ordi_UCI3, CI_high_cal_rho(corr_f , samplesize) )
+  }
+
+# Point Estimation
+  Para_True = matrix( unlist(para_true), nrow=n.sim, byrow=TRUE)
+  Para_Esti = matrix( unlist(para_esti), nrow=n.sim, byrow=TRUE)
+  theta_true = apply( Para_True, MARGIN =2, mean)
+  theta_esti_mean = apply( Para_Esti, MARGIN =2, mean)
+  theta_esti_sd = apply( Para_Esti, MARGIN =2, sd)
+
+# Accuracy and Precision 
+  RB = (  (theta_esti_mean - theta_true)/theta_true        )*100
+  SB = (  abs(theta_esti_mean - theta_true)/theta_esti_sd  )*100
+  RMSE = sqrt(   apply( (Para_Esti - Para_True)^2, MARGIN =2, mean )   )
+  
+# Confidence Interval 
+  LCI = matrix( unlist(para_LCI), nrow=n.sim, byrow=TRUE)
+  UCI = matrix( unlist(para_UCI), nrow=n.sim, byrow=TRUE)
+  para_true_forCI = c(para$lambda.vec, para$prop.vec, unlist(para$prop.list)[c(1,4,2,5,3,6)], to.upper(para$corr.mat)[c(2:6, 8:11, 13:15, 17:18, 20)])
+  Para_True_forCI = matrix(rep(para_true_forCI,n.sim), nrow=n.sim, byrow=TRUE)
+  
+  CR = apply(  ifelse( ( Para_True_forCI - LCI >= 0) & (UCI - Para_True_forCI >= 0),1,0 )   ,  MARGIN =2, sum)  / n.sim
+  CR = CR[c(1:4, 5,8, 6,9, 7,10, 11:25)]
+
+  inference = data.frame(Para_True      = round(theta_true,4),
+              Para_Esti_Mean = round(theta_esti_mean,4), 
+              Para_Esti_SD   = round(theta_esti_sd,4),
+              RB             = round(RB,4),            
+              SB             = round(SB,4), 
+              RMSE           = round(RMSE,4),
+              CR             = round(CR, 4))
+  rownames(inference) = c("lambda1", "lambda2", "p1", "p2", "t11", "t21", "t31", "t12", "t22", "t32",
+                          "rho12", "rho13", "rho14", "rho15", "rho16", "rho23", "rho24", "rho25", "rho26",
+                          "rho34", "rho35", "rho36", "rho45", "rho46", "rho56")
+  
+  
+  return(inference)
+}
+
+```
+
+```{r check the results}
+
+result01 = simulation.function(para_0102, 100,    n.sim = 1000); result01
+result02 = simulation.function(para_0102, 10000,  n.sim = 1000); result02
+result03 = simulation.function(para_0304, 100,    n.sim = 1000); result03
+result04 = simulation.function(para_0304, 10000,  n.sim = 1000); result04
+result05 = simulation.function(para_0506, 100,    n.sim = 1000); result05
+result06 = simulation.function(para_0506, 10000,  n.sim = 1000); result06
+result07 = simulation.function(para_0708, 100,    n.sim = 1000); result07
+result08 = simulation.function(para_0708, 10000,  n.sim = 1000); result08
+
+result09 = simulation.function(para_0910, 100,    n.sim = 1000); result09
+result10 = simulation.function(para_0910, 10000,  n.sim = 1000); result10
+result11 = simulation.function(para_1112, 100,    n.sim = 1000); result11
+result12 = simulation.function(para_1112, 10000,  n.sim = 1000); result12
+result13 = simulation.function(para_1314, 100,    n.sim = 1000); result13
+result14 = simulation.function(para_1314, 10000,  n.sim = 1000); result14
+result15 = simulation.function(para_1516, 100,    n.sim = 1000); result15
+result16 = simulation.function(para_1516, 10000,  n.sim = 1000); result16
+
+
+require(openxlsx)
+result = list("sc_01" = result01, "sc_02" = result02,  "sc_03" = result03, "sc_04" = result04, 
+              "sc_05" = result05, "sc_06" = result06,  "sc_07" = result07, "sc_08" = result08,
+              "sc_09" = result09, "sc_10" = result10,  "sc_11" = result11, "sc_12" = result12, 
+              "sc_13" = result13, "sc_14" = result14,  "sc_15" = result15, "sc_16" = result16)
+write.xlsx(result , file = "C:/Users/pyen2/Dropbox/UIC BSTT 565 Computational Statistics/5.EXAM/Midterm/Q4_PoisBinOrd_Pei-Shan_Jieqi/Result_20201104_PSY.xlsx")
+
+
+```
+
