@@ -105,13 +105,6 @@ corr.mat_W = N+t(N)    # symmetric matrix
 diag(corr.mat_W) = 1   
 corr.mat_W
 B = corr.mat_W
-
-
-# Validates the specified correlation matrix
-validation.corr(n.P,n.B,n.O,corr.vec=NULL,corr.mat_W)
-
-# checks if there are range violations among pp, po, pb, bb, bo, oo combinations
-correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,corr.mat_W)
 ```
 
 ```{r create parameters}
