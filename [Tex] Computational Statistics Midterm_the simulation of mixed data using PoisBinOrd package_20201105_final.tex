@@ -1,0 +1,598 @@
+\documentclass[letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin = 0.9in]{geometry}
+\usepackage[round]{natbib}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{natbib}
+\usepackage{amsmath, bm}
+\bibliographystyle{apa}
+\usepackage[toc,page]{appendix}
+
+\title{Computational Statistics Midterm: the simulation of mixed data using PoisBinOrd package}
+
+\author{Jieqi Tu and Pei-Shan Yen}
+\date{Nov 5 2020}
+
+\begin{document}
+\maketitle
+
+
+
+
+\section{Methodology}
+
+The real-world data is sometimes hard to obtain, due in part to the restricted budget and time. Even in the case that the real data is available, the sample size of the data can be small, causing a reduction in the power, which, in turn, limits the statistical inference. To resolve such issues, the simulation studies can be performed, in which the real data can be mimicked satisfactorily. The format of the simulated data follows 
+mixed data that is commonly seen in real world examples; mixed data usually consists of various  types of variables, such as count, binary, ordinal, or continuous variables.
+
+There are several advantages of using the simulated data. A particular one is that it allows for large sample size, aiding researchers to construct models for their research problems. After model selection, the true population parameters and their accuracy and the precision can be well estimated. In these circumstances, it is expected to have a better evaluation of validity, reliability, generalization, and plausibility of research.\\
+
+The package \textbf{PoisBinOrd} is used to generate mixed data that contains the count, binary, and ordinal variables simultaneously. Using the RNG algorithm proposed by Demirtas (2017), together with marginal distribution specifications and corresponding association structure, stochastic simulated dataset can be generated. The following procedure describes the algorithm for mixed data generation using the package \textbf{PoisBinOrd}.\\ 
+
+\textit{Step 1. Define the sample size and the number of variables}\\
+The count, binary, and ordinal variables are denoted by $P$, $B$, and $O$. The sample size of the mixed data is denoted by $n$. The number of binary variable, and the number of ordinal variable are $n.P$, $n.B$, and 
+$n.O$. The values of $n$, $n.P$, $n.B$, and 
+$n.O$ need to be given in the function \texttt{gen.PoisBinOrd}. With those being calculated, the number of the variables in the mixed data can be determined, which is $N = n.P + n.B + n.O$. \\
+
+
+
+
+
+\textit{Step 2. The specification of the marginal distributions}\\
+In the function \texttt{gen.PoisBinOrd}, variables of the count data are assumed to follow Poisson distribution with rate parameter $\lambda$.
+Variables of binary data is assumed to follow Binomial distribution with proportion parameter $p$. For ordinal data, the cumulative distribution is described by its thresholds $t_s, s=1,2,3,...$\\
+
+
+
+\textit{Step 3. The specification of feasible association structure for the mixed data}\\
+The Pearson correlation matrix, $\Sigma$, with dimension $N \times N$, is used to describe association structures for mixed data. Prior to its use, the feasibility of the correlation structure needs to be verified. In particular, $\Sigma$ has to satisfy the criteria of: 1) being a symmetric positive definite matrix, 2) having all the diagonal entries being one, and 3) having all elements in the correlation matrix within the correlation bounds. To check the last criterion, the sorting algorithm proposed by Demirtas and Hedeker (2011) is used.\\
+
+
+
+\textit{Step. 4. Generate the mixed data}\\
+Using the function \texttt{overall.corr.mat} developed by Demirtas (2017), the correlation matrix $\Sigma$ can be transformed into a positive definite, intermediate correlation matrix $\Sigma^{*}$. If such an intermediate matrix is not available, a nearest positive matrix will be used. After finding $\Sigma^{*}$, the count variables are produced via the inverse transform sampling. For the binary and ordinal variables, they are obtained by dichotomization and ordinalization in line with the thresholds of the underlying distributions. Recall the  underlying assumption of mixed data generation algorithm, which assumes that all the variables are produced from a multivariate normal distribution (MVN) with mean vector of $0$ and the correlation structure $\Sigma^{*}$. With $\Sigma^{*}$ being known, the latent MVN can then be employed to generate the mixed data. This completes the entire process.  \\
+
+\section{Simulation setting}
+Considering 16 scenarios (see Tables 1 and 2), a series of simulations are performed by using the package \textbf{PoisBinOrd}. Three aspects are considered to define a scenario. The first is the comparison of small and large sample sizes. Following the common practice, the small sample size is given as 100 and the large sample size is 10,000. The second is the comparison of different correlation structures. Two correlation structures are employed to confirm the stability of the algorithm (see Section 1). The first correlation structure is called random correlation. Each entry of the correlation matrix is sampled uniformly at random within the correlation bound. The second structure is called weak correlation; each element of this matrix is randomly sampled from a uniform distribution with range (-0.20, +0.20). The last criterion is the effect of rare events. To do so, a total of four parameter settings are considered, including large Poisson rate/balanced binary and ordinal data (scenarios 1-4), large Poisson rate/imbalanced binary and ordinal data (scenarios 5-8), small Poisson rate/balanced binary and ordinal data (scenarios 9-12), small Poisson rate/imbalanced binary and ordinal data (scenarios 13-16). Note, in this report small Poisson rate is defined as the one having the rate parameter below one, while large Poisson rate exhibits the rate parameter above one.
+
+\begin{table}[h]
+\centering
+\caption{The 16 scenarios considered in the simulations}
+\begin{tabular}{@{}lllrrrrrrrr@{}}
+\hline
+scenario &       &             & \multicolumn{1}{c}{1-4} & \multicolumn{1}{c}{5-8} & \multicolumn{1}{c}{9-12} & \multicolumn{1}{c}{13-16} \\ \hline
+Poisson  & $P_1$ & $\lambda_1$ & 2.00                    & 2.00                    & 0.20                     & 0.20                      \\
+         & $P_2$ & $\lambda_2$ & 7.00                    & 7.00                    & 0.70                     & 0.70                      \\
+Binary   & $B_1$ & $p_1$       & 0.45                    & 0.80                    & 0.45                     & 0.80                      \\
+         & $B_2$ & $p_2$       & 0.50                    & 0.90                    & 0.50                     & 0.90                      \\
+Ordianl  & $O_1$ & $t_{1}$     & 0.25                    & 0.65                    & 0.25                     & 0.65                      \\
+         &       & $t_{2}$     & 0.50                    & 0.80                    & 0.50                     & 0.80                      \\
+         &       & $t_{3}$     & 0.75                    & 0.90                    & 0.75                     & 0.90                      \\
+         & $O_2$ & $t_{1}$     & 0.20                    & 0.50                    & 0.20                     & 0.50                      \\
+         &       & $t_{2}$     & 0.45                    & 0.80                    & 0.45                     & 0.80                      \\
+         &       & $t_{3}$     & 0.75                    & 0.90                    & 0.75                     & 0.90                      \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{The correlation structures of the 16 scenarios}
+\begin{tabular}{crrrrr}
+\hline
+scenario       & \multicolumn{1}{c}{1,2} & \multicolumn{1}{c}{5,6} & \multicolumn{1}{c}{9,10} & \multicolumn{1}{c}{13,14} & \multicolumn{1}{c}{others} \\ \hline
+$\rho{P_1P_2}$ & 0.1473                  & 0.4397                  & 0.3712                   & 0.4811                    & 0.0172                                     \\
+$\rho{P_1B_1}$ & -0.1217                 & -0.0824                 & -0.2252                  & -0.3434                   & -0.0619                                    \\
+$\rho{P_1B_2}$ & -0.3644                 & -0.2739                 & 0.4275                   & -0.1249                   & 0.0460                                     \\
+$\rho{P_1O_1}$ & 0.0965                  & 0.5459                  & 0.3816                   & 0.5349                    & -0.0962                                    \\
+$\rho{P_1O_2}$ & -0.1741                 & -0.0994                 & 0.0918                   & -0.1313                   & -0.1050                                    \\
+$\rho{P_2B_1}$ & 0.5454                  & -0.3534                 & -0.3767                  & -0.4763                   & -0.0405                                    \\
+$\rho{P_2B_2}$ & -0.5916                 & 0.0635                  & -0.0998                  & 0.0496                    & -0.0672                                    \\
+$\rho{P_2O_1}$ & 0.1183                  & 0.1516                  & 0.0924                   & 0.2603                    & 0.1549                                     \\
+$\rho{P_2O_2}$ & 0.4566                  & 0.0831                  & 0.5705                   & 0.1111                    & 0.1468                                     \\
+$\rho{B_1B_2}$ & -0.0132                 & 0.3847                  & -0.3303                  & 0.3770                    & 0.0897                                     \\
+$\rho{B_1O_1}$ & 0.2617                  & -0.4778                 & -0.3954                  & -0.3716                   & 0.0209                                     \\
+$\rho{B_1O_2}$ & 0.3623                  & 0.2440                  & -0.5631                  & 0.2440                    & -0.1080                                    \\
+$\rho{B_2O_1}$ & -0.0074                 & -0.0941                 & -0.1481                  & -0.0941                   & 0.0681                                     \\
+$\rho{B_2O_2}$ & -0.0234                 & 0.2622                  & 0.0354                   & 0.2622                    & 0.1476                                     \\
+$\rho{O_1O_2}$ & -0.1309                 & 0.2451                  & 0.3750                   & 0.2451                    & -0.0526                                    \\ \hline
+\end{tabular}
+\end{table}
+
+\newpage
+\section{Results and Discussions}
+
+In each scenario, 1,000 simulated datasets are produced to evaluate the performance of the package \textbf{PoisBinOrd}, with a particular attention to accuracy and precision of the simulation replications. Table 3-10 show the point estimate, the accuracy, and the precision of the parameters. The true values (TV) stand for the true parameters. The average estimates (AE) and the standard deviations of the estimates (SD) are calculated across the 1,000 replications.\\
+
+Let the true parameter be $\theta$, and the estimated value be $\hat\theta$. For checking the accuracy, the relative bias (RB), defined as $E[\frac{\hat\theta-\theta}{\theta}]\times100\%$, and the standardized bias (SB), defined as $E\bigg[\frac{|\hat\theta-\theta|}{SD(\hat\theta)}\bigg]\times100\%$, are used. Furthermore, to evaluate the hybrid measure of accuracy and precision, two more metrics, including the root mean square error (RMSE) of $\theta$, defined as $\sqrt{E[\hat\theta-\theta]^2}$, and the coverage rate (CR) (which is the percentage of times that $\theta$ is contained within a 95\% confidence interval) are employed. To cope with potential Poisson over-dispersion issue, the approximate confidence interval is calculated from the square root transformation of Poisson distribution. For ordinal variables, the standard deviation is computed from multinomial distribution. For sample Pearson correlation, the Fisher z-transformation is performed to convert the inherent skewed distribution into an approximately normal distribution.\\
+
+The simulation results indicate that, when using large sample size, there are decreases in the values of SD, RB, and RMSE. For example, the values of SD are substantially reduced by around ten times. In addition, the correlation structures have a great impact on the parameter estimation results. Compared with scenarios with a random correlation structure, the ones with a weak correlation structure exhibit relatively stable performance. Furthermore, for the effect of a rare event, it is only affected by using imbalanced binary and ordinal data, in which a less accurate result is exhibited.\\
+
+
+\begin{table}[h]
+\centering
+\caption{Scenario 01/02 - random correlation, large Poisson rate and balanced binary/ordinal distribution}
+\begin{tabular}{cccrrrrrrr}
+\hline
+Sample Size & Variable    & Parameter      & \multicolumn{1}{c}{TV} & \multicolumn{1}{c}{AE} & \multicolumn{1}{c}{SD} & \multicolumn{1}{c}{RB} & \multicolumn{1}{c}{SB} & \multicolumn{1}{c}{RMSE} & \multicolumn{1}{c}{CR} \\\hline
+100         & $P_1$       & $\lambda_1$    & 2.0000                 & 2.0090                 & 0.1418                 & 0.4475                 & 6.3102                 & 0.1420                   & 0.9490                 \\
+            & $P_2$       & $\lambda_2$    & 7.0000                 & 7.0024                 & 0.2753                 & 0.0340                 & 0.8645                 & 0.2752                   & 0.9370                 \\
+            & $B_1$       & $p_1$          & 0.4500                 & 0.4488                 & 0.0493                 & -0.2622                & 2.3944                 & 0.0493                   & 0.9530                 \\
+            & $B_2$       & $p_2$          & 0.5000                 & 0.4994                 & 0.0518                 & -0.1100                & 1.0628                 & 0.0517                   & 0.9360                 \\
+            & $O_1$       & $t_1$          & 0.2500                 & 0.2504                 & 0.0427                 & 0.1760                 & 1.0300                 & 0.0427                   & 0.9440                 \\
+            &             & $t_2$          & 0.5000                 & 0.4979                 & 0.0493                 & -0.4160                & 4.2203                 & 0.0493                   & 0.9510                 \\
+            &             & $t_3$          & 0.7500                 & 0.7488                 & 0.0419                 & -0.1573                & 2.8142                 & 0.0419                   & 0.9230                 \\
+            & $O_2$       & $t_1$          & 0.2000                 & 0.2008                 & 0.0407                 & 0.4250                 & 2.0904                 & 0.0407                   & 0.9450                 \\
+            &             & $t_2$          & 0.4500                 & 0.4547                 & 0.0482                 & 1.0511                 & 9.8086                 & 0.0484                   & 0.9420                 \\
+            &             & $t_3$          & 0.7500                 & 0.7509                 & 0.0433                 & 0.1147                 & 1.9880                 & 0.0432                   & 0.9370                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.1473                 & 0.1455                 & 0.1002                 & -1.2250                & 1.7999                 & 0.1002                   & 0.9410                 \\
+            &             & $\rho{P_1B_1}$ & -0.1217                & -0.1238                & 0.0970                 & 1.6859                 & 2.1165                 & 0.0969                   & 0.9470                 \\
+            &             & $\rho{P_1B_2}$ & -0.3644                & -0.3629                & 0.0802                 & -0.4020                & 1.8264                 & 0.0802                   & 0.9640                 \\
+            &             & $\rho{P_1O_1}$ & 0.0965                 & 0.0946                 & 0.0968                 & -1.9369                & 1.9318                 & 0.0967                   & 0.9520                 \\
+            &             & $\rho{P_1O_2}$ & -0.1741                & -0.1762                & 0.0960                 & 1.2066                 & 2.1865                 & 0.0960                   & 0.9500                 \\
+            &             & $\rho{P_2B_1}$ & 0.5454                 & 0.5421                 & 0.0669                 & -0.6142                & 5.0096                 & 0.0669                   & 0.9560                 \\
+            &             & $\rho{P_2B_2}$ & -0.5916                & -0.5786                & 0.0582                 & -2.2035                & 22.4183                & 0.0596                   & 0.9770                 \\
+            &             & $\rho{P_2O_1}$ & 0.1183                 & 0.1161                 & 0.0970                 & -1.9057                & 2.3253                 & 0.0970                   & 0.9540                 \\
+            &             & $\rho{P_2O_2}$ & 0.4566                 & 0.4512                 & 0.0779                 & -1.1810                & 6.9203                 & 0.0781                   & 0.9500                 \\
+            &             & $\rho{B_1B_2}$ & -0.0132                & -0.0259                & 0.1038                 & 96.7667                & 12.2864                & 0.1045                   & 0.9300                 \\
+            &             & $\rho{B_1O_1}$ & 0.2617                 & 0.2569                 & 0.0888                 & -1.8404                & 5.4259                 & 0.0888                   & 0.9620                 \\
+            &             & $\rho{B_1O_2}$ & 0.3623                 & 0.3637                 & 0.0857                 & 0.3746                 & 1.5835                 & 0.0857                   & 0.9440                 \\
+            &             & $\rho{B_2O_1}$ & -0.0074                & -0.0073                & 0.1004                 & -0.2350                & 0.0172                 & 0.1003                   & 0.9410                 \\
+            &             & $\rho{B_2O_2}$ & -0.0234                & -0.0259                & 0.1013                 & 10.6828                & 2.4634                 & 0.1013                   & 0.9400                 \\
+            &             & $\rho{O_1O_2}$ & -0.1309                & -0.1356                & 0.0959                 & 3.5531                 & 4.8526                 & 0.0959                   & 0.9510                 \\\hline
+10000       & $P_1$       & $\lambda_1$    & 2.0000                 & 1.9998                 & 0.0141                 & -0.0088                & 1.2557                 & 0.0141                   & 0.9480                 \\
+            & $P_2$       & $\lambda_2$    & 7.0000                 & 6.9998                 & 0.0259                 & -0.0026                & 0.7045                 & 0.0259                   & 0.9500                 \\
+            & $B_1$       & $p_1$          & 0.4500                 & 0.4502                 & 0.0050                 & 0.0402                 & 3.6179                 & 0.0050                   & 0.9510                 \\
+            & $B_2$       & $p_2$          & 0.5000                 & 0.5002                 & 0.0049                 & 0.0326                 & 3.3093                 & 0.0049                   & 0.9630                 \\
+            & $O_1$       & $t_1$          & 0.2500                 & 0.2501                 & 0.0044                 & 0.0372                 & 2.1319                 & 0.0044                   & 0.9490                 \\
+            &             & $t_2$          & 0.5000                 & 0.5001                 & 0.0051                 & 0.0172                 & 1.7024                 & 0.0051                   & 0.9710                 \\
+            &             & $t_3$          & 0.7500                 & 0.7498                 & 0.0044                 & -0.0226                & 3.8345                 & 0.0044                   & 0.9440                 \\
+            & $O_2$       & $t_1$          & 0.2000                 & 0.1998                 & 0.0041                 & -0.0872                & 4.2993                 & 0.0041                   & 0.9420                 \\
+            &             & $t_2$          & 0.4500                 & 0.4500                 & 0.0047                 & 0.0046                 & 0.4442                 & 0.0047                   & 0.9460                 \\
+            &             & $t_3$          & 0.7500                 & 0.7500                 & 0.0043                 & -0.0056                & 0.9869                 & 0.0043                   & 0.9550                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.1473                 & 0.1485                 & 0.0099                 & 0.8037                 & 11.9065                & 0.0100                   & 0.9510                 \\
+            &             & $\rho{P_1B_1}$ & -0.1217                & -0.1226                & 0.0097                 & 0.6649                 & 8.3143                 & 0.0098                   & 0.9580                 \\
+            &             & $\rho{P_1B_2}$ & -0.3644                & -0.3651                & 0.0079                 & 0.1908                 & 8.8544                 & 0.0079                   & 0.9660                 \\
+            &             & $\rho{P_1O_1}$ & 0.0965                 & 0.0968                 & 0.0096                 & 0.3107                 & 3.1371                 & 0.0096                   & 0.9520                 \\
+            &             & $\rho{P_1O_2}$ & -0.1741                & -0.1748                & 0.0100                 & 0.4084                 & 7.1434                 & 0.0100                   & 0.9490                 \\
+            &             & $\rho{P_2B_1}$ & 0.5454                 & 0.5380                 & 0.0064                 & -1.3562                & 115.2157               & 0.0098                   & 0.8540                 \\
+            &             & $\rho{P_2B_2}$ & -0.5916                & -0.5780                & 0.0061                 & -2.3091                & 225.2070               & 0.0149                   & 0.4500                 \\
+            &             & $\rho{P_2O_1}$ & 0.1183                 & 0.1200                 & 0.0099                 & 1.3836                 & 16.5233                & 0.0100                   & 0.9390                 \\
+            &             & $\rho{P_2O_2}$ & 0.4566                 & 0.4524                 & 0.0077                 & -0.9193                & 54.2631                & 0.0088                   & 0.9290                 \\
+            &             & $\rho{B_1B_2}$ & -0.0132                & -0.0198                & 0.0103                 & 50.2016                & 63.9364                & 0.0123                   & 0.8880                 \\
+            &             & $\rho{B_1O_1}$ & 0.2617                 & 0.2613                 & 0.0099                 & -0.1444                & 3.8302                 & 0.0099                   & 0.9280                 \\
+            &             & $\rho{B_1O_2}$ & 0.3623                 & 0.3646                 & 0.0090                 & 0.6379                 & 25.6899                & 0.0093                   & 0.9390                 \\
+            &             & $\rho{B_2O_1}$ & -0.0074                & -0.0070                & 0.0098                 & -5.4015                & 4.0697                 & 0.0098                   & 0.9510                 \\
+            &             & $\rho{B_2O_2}$ & -0.0234                & -0.0256                & 0.0101                 & 9.3772                 & 21.6464                & 0.0104                   & 0.9460                 \\    
+            &             & $\rho{O_1O_2}$ & -0.1309                & -0.1302                & 0.0097                 & -0.5854                & 7.8624                 & 0.0098                   & 0.9520                \\  \hline
+\end{tabular}
+\end{table}
+
+
+
+\begin{table}[h]
+\centering
+\caption{Scenario 03/04 - weak correlation, large Poisson rate and balanced binary/ordinal distribution}
+\begin{tabular}{cccrrrrrrr}
+\hline
+Sample Size & Variable    & Parameter      & \multicolumn{1}{c}{TV} & \multicolumn{1}{c}{AE} & \multicolumn{1}{c}{SD} & \multicolumn{1}{c}{RB} & \multicolumn{1}{c}{SB} & \multicolumn{1}{c}{RMSE} & \multicolumn{1}{c}{CR} \\\hline
+100         & $P_1$       & $\lambda_1$    & 2.0000                 & 1.9988                 & 0.1380                 & -0.0595                & 0.8624                 & 0.1379                   & 0.9580                 \\
+            & $P_2$       & $\lambda_2$    & 7.0000                 & 6.9979                 & 0.2739                 & -0.0296                & 0.7556                 & 0.2738                   & 0.9260                 \\
+            & $B_1$       & $p_1$          & 0.4500                 & 0.4504                 & 0.0505                 & 0.0822                 & 0.7326                 & 0.0505                   & 0.9330                 \\
+            & $B_2$       & $p_2$          & 0.5000                 & 0.4976                 & 0.0525                 & -0.4700                & 4.4735                 & 0.0526                   & 0.9240                 \\
+            & $O_1$       & $t_1$          & 0.2500                 & 0.2504                 & 0.0433                 & 0.1800                 & 1.0392                 & 0.0433                   & 0.9490                 \\
+            &             & $t_2$          & 0.5000                 & 0.5008                 & 0.0498                 & 0.1700                 & 1.7074                 & 0.0498                   & 0.9480                 \\
+            &             & $t_3$          & 0.7500                 & 0.7517                 & 0.0428                 & 0.2227                 & 3.9052                 & 0.0428                   & 0.9280                 \\
+            & $O_2$       & $t_1$          & 0.2000                 & 0.1996                 & 0.0406                 & -0.2100                & 1.0344                 & 0.0406                   & 0.9500                 \\
+            &             & $t_2$          & 0.4500                 & 0.4492                 & 0.0491                 & -0.1733                & 1.5871                 & 0.0491                   & 0.9550                 \\
+            &             & $t_3$          & 0.7500                 & 0.7502                 & 0.0425                 & 0.0227                 & 0.3997                 & 0.0425                   & 0.9450                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.0172                 & 0.0177                 & 0.1021                 & 2.9406                 & 0.4959                 & 0.1021                   & 0.9420                 \\
+            &             & $\rho{P_1B_1}$ & -0.0619                & -0.0608                & 0.0990                 & -1.6395                & 1.0248                 & 0.0989                   & 0.9550                 \\
+            &             & $\rho{P_1B_2}$ & 0.0460                 & 0.0427                 & 0.0962                 & -7.1895                & 3.4363                 & 0.0963                   & 0.9560                 \\
+            &             & $\rho{P_1O_1}$ & -0.0962                & -0.0950                & 0.0965                 & -1.2477                & 1.2429                 & 0.0965                   & 0.9550                 \\
+            &             & $\rho{P_1O_2}$ & -0.1050                & -0.1015                & 0.1003                 & -3.3185                & 3.4752                 & 0.1003                   & 0.9400                 \\
+            &             & $\rho{P_2B_1}$ & -0.0405                & -0.0407                & 0.0990                 & 0.4266                 & 0.1748                 & 0.0989                   & 0.9450                 \\
+            &             & $\rho{P_2B_2}$ & -0.0672                & -0.0669                & 0.1021                 & -0.4419                & 0.2911                 & 0.1020                   & 0.9400                 \\
+            &             & $\rho{P_2O_1}$ & 0.1549                 & 0.1605                 & 0.0991                 & 3.5906                 & 5.6119                 & 0.0992                   & 0.9400                 \\
+            &             & $\rho{P_2O_2}$ & 0.1468                 & 0.1424                 & 0.1004                 & -3.0004                & 4.3875                 & 0.1005                   & 0.9420                 \\
+            &             & $\rho{B_1B_2}$ & 0.0897                 & 0.0907                 & 0.0966                 & 1.1309                 & 1.0498                 & 0.0966                   & 0.9510                 \\
+            &             & $\rho{B_1O_1}$ & 0.0209                 & 0.0189                 & 0.1008                 & -9.3592                & 1.9405                 & 0.1007                   & 0.9430                 \\
+            &             & $\rho{B_1O_2}$ & -0.1080                & -0.1107                & 0.0955                 & 2.4979                 & 2.8238                 & 0.0955                   & 0.9560                 \\
+            &             & $\rho{B_2O_1}$ & 0.0681                 & 0.0689                 & 0.0985                 & 1.2663                 & 0.8748                 & 0.0985                   & 0.9480                 \\
+            &             & $\rho{B_2O_2}$ & 0.1476                 & 0.1500                 & 0.0969                 & 1.6017                 & 2.4390                 & 0.0969                   & 0.9420                 \\
+            &             & $\rho{O_1O_2}$ & -0.0526                & -0.0494                & 0.0970                 & -6.0600                & 3.2878                 & 0.0970                   & 0.9600                 \\\hline
+10000       & $P_1$       & $\lambda_1$    & 2.0000                 & 2.0000                 & 0.0143                 & -0.0017                & 0.2337                 & 0.0143                   & 0.9410                 \\  
+            & $P_2$       & $\lambda_2$    & 7.0000                 & 6.9992                 & 0.0265                 & -0.0118                & 3.1271                 & 0.0265                   & 0.9550                 \\
+            & $B_1$       & $p_1$          & 0.4500                 & 0.4496                 & 0.0050                 & -0.0848                & 7.6435                 & 0.0050                   & 0.9460                 \\
+            & $B_2$       & $p_2$          & 0.5000                 & 0.5001                 & 0.0050                 & 0.0106                 & 1.0594                 & 0.0050                   & 0.9490                 \\
+            & $O_1$       & $t_1$          & 0.2500                 & 0.2502                 & 0.0043                 & 0.0942                 & 5.5233                 & 0.0043                   & 0.9570                 \\
+            &             & $t_2$          & 0.5000                 & 0.5002                 & 0.0049                 & 0.0326                 & 3.3310                 & 0.0049                   & 0.9510                 \\
+            &             & $t_3$          & 0.7500                 & 0.7500                 & 0.0045                 & 0.0058                 & 0.9617                 & 0.0045                   & 0.9540                 \\
+            & $O_2$       & $t_1$          & 0.2000                 & 0.1997                 & 0.0039                 & -0.1278                & 6.4889                 & 0.0039                   & 0.9360                 \\
+            &             & $t_2$          & 0.4500                 & 0.4497                 & 0.0048                 & -0.0581                & 5.4616                 & 0.0048                   & 0.9480                 \\
+            &             & $t_3$          & 0.7500                 & 0.7500                 & 0.0043                 & -0.0061                & 1.0474                 & 0.0043                   & 0.9430                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.0172                 & 0.0171                 & 0.0099                 & -0.9153                & 1.5889                 & 0.0099                   & 0.9490                 \\
+            &             & $\rho{P_1B_1}$ & -0.0619                & -0.0621                & 0.0097                 & 0.4678                 & 2.9869                 & 0.0097                   & 0.9550                 \\
+            &             & $\rho{P_1B_2}$ & 0.0460                 & 0.0465                 & 0.0099                 & 1.1459                 & 5.3300                 & 0.0099                   & 0.9530                 \\
+            &             & $\rho{P_1O_1}$ & -0.0962                & -0.0961                & 0.0102                 & -0.0280                & 0.2642                 & 0.0102                   & 0.9380                 \\
+            &             & $\rho{P_1O_2}$ & -0.1050                & -0.1049                & 0.0100                 & -0.1259                & 1.3154                 & 0.0100                   & 0.9490                 \\
+            &             & $\rho{P_2B_1}$ & -0.0405                & -0.0409                & 0.0099                 & 0.8270                 & 3.3707                 & 0.0099                   & 0.9440                 \\
+            &             & $\rho{P_2B_2}$ & -0.0672                & -0.0672                & 0.0101                 & 0.0090                 & 0.0603                 & 0.0101                   & 0.9450                 \\
+            &             & $\rho{P_2O_1}$ & 0.1549                 & 0.1548                 & 0.0096                 & -0.1035                & 1.6654                 & 0.0096                   & 0.9580                 \\
+            &             & $\rho{P_2O_2}$ & 0.1468                 & 0.1467                 & 0.0094                 & -0.0796                & 1.2392                 & 0.0094                   & 0.9620                 \\
+            &             & $\rho{B_1B_2}$ & 0.0897                 & 0.0899                 & 0.0099                 & 0.2498                 & 2.2610                 & 0.0099                   & 0.9550                 \\
+            &             & $\rho{B_1O_1}$ & 0.0209                 & 0.0210                 & 0.0096                 & 0.3741                 & 0.8131                 & 0.0096                   & 0.9530                 \\
+            &             & $\rho{B_1O_2}$ & -0.1080                & -0.1081                & 0.0101                 & 0.1271                 & 1.3557                 & 0.0101                   & 0.9460                 \\
+            &             & $\rho{B_2O_1}$ & 0.0681                 & 0.0678                 & 0.0102                 & -0.3375                & 2.2604                 & 0.0102                   & 0.9450                 \\
+            &             & $\rho{B_2O_2}$ & 0.1476                 & 0.1469                 & 0.0097                 & -0.4828                & 7.3258                 & 0.0097                   & 0.9510                 \\
+            &             & $\rho{O_1O_2}$ & -0.0526                & -0.0525                & 0.0101                 & -0.1716                & 0.8922                 & 0.0101                   & 0.9380                 \\  \hline
+\end{tabular}
+\end{table}
+
+
+
+\begin{table}[h]
+\centering
+\caption{Scenario 05/06 - random correlation, large Poisson rate and imbalanced binary/ordinal distribution}
+\begin{tabular}{cccrrrrrrr}
+\hline
+Sample Size & Variable    & Parameter      & \multicolumn{1}{c}{TV} & \multicolumn{1}{c}{AE} & \multicolumn{1}{c}{SD} & \multicolumn{1}{c}{RB} & \multicolumn{1}{c}{SB} & \multicolumn{1}{c}{RMSE} & \multicolumn{1}{c}{CR} \\ \hline
+100         & $P_1$       & $\lambda_1$    & 2.0000                 & 2.0024                 & 0.1451                 & 0.1195                 & 1.6475                 & 0.1450                   & 0.9480                 \\
+            & $P_2$       & $\lambda_2$    & 7.0000                 & 6.9876                 & 0.2662                 & -0.1779                & 4.6777                 & 0.2663                   & 0.9430                 \\
+            & $B_1$       & $p_1$          & 0.8000                 & 0.8003                 & 0.0403                 & 0.0400                 & 0.7941                 & 0.0403                   & 0.9310                 \\
+            & $B_2$       & $p_2$          & 0.9000                 & 0.8993                 & 0.0308                 & -0.0767                & 2.2406                 & 0.0308                   & 0.9300                 \\
+            & $O_1$       & $t_1$          & 0.6500                 & 0.6498                 & 0.0483                 & -0.0231                & 0.3106                 & 0.0483                   & 0.9420                 \\
+            &             & $t_2$          & 0.8000                 & 0.8000                 & 0.0418                 & 0.0037                 & 0.0717                 & 0.0418                   & 0.9220                 \\
+            &             & $t_3$          & 0.9000                 & 0.8999                 & 0.0303                 & -0.0078                & 0.2311                 & 0.0303                   & 0.9400                 \\
+            & $O_2$       & $t_1$          & 0.5000                 & 0.5009                 & 0.0503                 & 0.1800                 & 1.7876                 & 0.0503                   & 0.9310                 \\
+            &             & $t_2$          & 0.8000                 & 0.7991                 & 0.0405                 & -0.1088                & 2.1500                 & 0.0405                   & 0.9200                 \\
+            &             & $t_3$          & 0.9000                 & 0.8987                 & 0.0305                 & -0.1400                & 4.1363                 & 0.0305                   & 0.9320                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.4397                 & 0.3833                 & 0.0876                 & -12.8259               & 64.3422                & 0.1042                   & 0.8860                 \\
+            &             & $\rho{P_1B_1}$ & -0.0824                & -0.1566                & 0.1017                 & 89.9311                & 72.8939                & 0.1258                   & 0.8750                 \\
+            &             & $\rho{P_1B_2}$ & -0.2739                & -                      & -                      & -                      & -                      & -                        & -                      \\
+            &             & $\rho{P_1O_1}$ & 0.5459                 & 0.5066                 & 0.0815                 & -7.2028                & 48.2666                & 0.0904                   & 0.9020                 \\
+            &             & $\rho{P_1O_2}$ & -0.0994                & -0.0666                & 0.0988                 & -32.9879               & 33.1658                & 0.1041                   & 0.9420                 \\
+            &             & $\rho{P_2B_1}$ & -0.3534                & -0.3026                & 0.0900                 & -14.3527               & 56.3684                & 0.1032                   & 0.9200                 \\
+            &             & $\rho{P_2B_2}$ & 0.0635                 & -                      & -                      & -                      & -                      & -                        & -                      \\
+            &             & $\rho{P_2O_1}$ & 0.1516                 & 0.2073                 & 0.0966                 & 36.7273                & 57.6322                & 0.1115                   & 0.9090                 \\
+            &             & $\rho{P_2O_2}$ & 0.0831                 & 0.0637                 & 0.1031                 & -23.3217               & 18.8065                & 0.1048                   & 0.9290                 \\
+            &             & $\rho{B_1B_2}$ & 0.3847                 & -                      & -                      & -                      & -                      & -                        & -                      \\
+            &             & $\rho{B_1O_1}$ & -0.4778                & -0.3777                & 0.1091                 & -20.9526               & 91.7527                & 0.1481                   & 0.7180                 \\
+            &             & $\rho{B_1O_2}$ & 0.2440                 & 0.2228                 & 0.0747                 & -8.6826                & 28.3599                & 0.0776                   & 0.9700                 \\
+            &             & $\rho{B_2O_1}$ & -0.0941                & -                      & -                      & -                      & -                      & -                        & -                      \\
+            &             & $\rho{B_2O_2}$ & 0.2622                 & -                      & -                      & -                      & -                      & -                        & -                      \\
+            &             & $\rho{O_1O_2}$ & 0.2451                 & 0.2105                 & 0.1084                 & -14.0946               & 31.8664                & 0.1137                   & 0.8940                 \\\hline
+10000       & $P_1$       & $\lambda_1$    & 2.0000                 & 1.9999                 & 0.0137                 & -0.0054                & 0.7921                 & 0.0137                   & 0.9470                 \\
+            & $P_2$       & $\lambda_2$    & 7.0000                 & 6.9989                 & 0.0280                 & -0.0159                & 3.9718                 & 0.0280                   & 0.9250                 \\
+            & $B_1$       & $p_1$          & 0.8000                 & 0.7999                 & 0.0040                 & -0.0165                & 3.2905                 & 0.0040                   & 0.9570                 \\
+            & $B_2$       & $p_2$          & 0.9000                 & 0.8998                 & 0.0030                 & -0.0174                & 5.2802                 & 0.0030                   & 0.9650                 \\
+            & $O_1$       & $t_1$          & 0.6500                 & 0.6501                 & 0.0048                 & 0.0082                 & 1.1158                 & 0.0048                   & 0.9490                 \\
+            &             & $t_2$          & 0.8000                 & 0.8001                 & 0.0039                 & 0.0163                 & 3.3326                 & 0.0039                   & 0.9430                 \\
+            &             & $t_3$          & 0.9000                 & 0.8999                 & 0.0030                 & -0.0081                & 2.4489                 & 0.0030                   & 0.9490                 \\
+            & $O_2$       & $t_1$          & 0.5000                 & 0.5002                 & 0.0050                 & 0.0413                 & 4.1673                 & 0.0050                   & 0.9530                 \\
+            &             & $t_2$          & 0.8000                 & 0.8001                 & 0.0041                 & 0.0169                 & 3.2888                 & 0.0041                   & 0.9520                 \\
+            &             & $t_3$          & 0.9000                 & 0.9000                 & 0.0030                 & 0.0024                 & 0.7273                 & 0.0030                   & 0.9450                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.4397                 & 0.3824                 & 0.0088                 & -13.0319               & 648.6600               & 0.0580                   & 0.0000                 \\
+            &             & $\rho{P_1B_1}$ & -0.0824                & -0.1557                & 0.0104                 & 88.8932                & 704.4716               & 0.0740                   & 0.0000                 \\
+            &             & $\rho{P_1B_2}$ & -0.2739                & -0.2640                & 0.0108                 & -3.6008                & 91.3872                & 0.0146                   & 0.7730                 \\
+            &             & $\rho{P_1O_1}$ & 0.5459                 & 0.5063                 & 0.0081                 & -7.2532                & 488.1481               & 0.0404                   & 0.0020                 \\
+            &             & $\rho{P_1O_2}$ & -0.0994                & -0.0685                & 0.0099                 & -31.0470               & 312.3768               & 0.0324                   & 0.1210                 \\
+            &             & $\rho{P_2B_1}$ & -0.3534                & -0.3071                & 0.0092                 & -13.0832               & 505.2346               & 0.0471                   & 0.0000                 \\
+            &             & $\rho{P_2B_2}$ & 0.0635                 & 0.0406                 & 0.0101                 & -36.0898               & 226.6982               & 0.0250                   & 0.3690                 \\
+            &             & $\rho{P_2O_1}$ & 0.1516                 & 0.2074                 & 0.0100                 & 36.7494                & 556.9621               & 0.0566                   & 0.0000                 \\
+            &             & $\rho{P_2O_2}$ & 0.0831                 & 0.0602                 & 0.0101                 & -27.5517               & 227.3882               & 0.0250                   & 0.3880                 \\
+            &             & $\rho{B_1B_2}$ & 0.3847                 & 0.3350                 & 0.0125                 & -12.9168               & 398.9775               & 0.0512                   & 0.0050                 \\
+            &             & $\rho{B_1O_1}$ & -0.4778                & -0.3784                & 0.0108                 & -20.8074               & 919.1400               & 0.1000                   & 0.0000                 \\
+            &             & $\rho{B_1O_2}$ & 0.2440                 & 0.2219                 & 0.0076                 & -9.0691                & 292.2057               & 0.0234                   & 0.3140                 \\
+            &             & $\rho{B_2O_1}$ & -0.0941                & -0.1262                & 0.0116                 & 34.0819                & 275.6993               & 0.0341                   & 0.1300                 \\
+            &             & $\rho{B_2O_2}$ & 0.2622                 & 0.2650                 & 0.0044                 & 1.0886                 & 65.2029                & 0.0052                   & 0.9990                 \\
+            &             & $\rho{O_1O_2}$ & 0.2451                 & 0.2133                 & 0.0107                 & -12.9856               & 296.5106               & 0.0336                   & 0.0970                 \\ \hline
+\end{tabular}
+\end{table}
+
+
+
+
+\begin{table}[h]
+\centering
+\caption{Scenario 07/08 - weak correlation, large Poisson rate and imbalanced binary/ordinal distribution}
+\begin{tabular}{cccrrrrrrr}
+\hline
+Sample Size & Variable    & Parameter      & \multicolumn{1}{c}{TV} & \multicolumn{1}{c}{AE} & \multicolumn{1}{c}{SD} & \multicolumn{1}{c}{RB} & \multicolumn{1}{c}{SB} & \multicolumn{1}{c}{RMSE} & \multicolumn{1}{c}{CR} \\ \hline
+100         & $P_1$       & $\lambda_1$    & 2.0000                 & 2.0031                 & 0.1400                 & 0.1575                 & 2.2506                 & 0.1399                   & 0.9550                 \\
+            & $P_2$       & $\lambda_2$    & 7.0000                 & 6.9920                 & 0.2627                 & -0.1140                & 3.0375                 & 0.2627                   & 0.9430                 \\
+            & $B_1$       & $p_1$          & 0.8000                 & 0.7992                 & 0.0391                 & -0.0988                & 2.0230                 & 0.0390                   & 0.9340                 \\
+            & $B_2$       & $p_2$          & 0.9000                 & 0.8986                 & 0.0307                 & -0.1522                & 4.4619                 & 0.0307                   & 0.9280                 \\
+            & $O_1$       & $t_1$          & 0.6500                 & 0.6504                 & 0.0462                 & 0.0662                 & 0.9304                 & 0.0462                   & 0.9540                 \\
+            &             & $t_2$          & 0.8000                 & 0.8000                 & 0.0399                 & 0.0062                 & 0.1253                 & 0.0399                   & 0.9290                 \\
+            &             & $t_3$          & 0.9000                 & 0.8996                 & 0.0297                 & -0.0400                & 1.2135                 & 0.0297                   & 0.9380                 \\
+            & $O_2$       & $t_1$          & 0.5000                 & 0.5013                 & 0.0509                 & 0.2660                 & 2.6108                 & 0.0509                   & 0.9350                 \\
+            &             & $t_2$          & 0.8000                 & 0.8008                 & 0.0408                 & 0.1000                 & 1.9600                 & 0.0408                   & 0.9420                 \\
+            &             & $t_3$          & 0.9000                 & 0.9006                 & 0.0310                 & 0.0700                 & 2.0292                 & 0.0310                   & 0.9150                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.0172                 & 0.0160                 & 0.1004                 & -6.9688                & 1.1954                 & 0.1003                   & 0.9440                 \\
+            &             & $\rho{P_1B_1}$ & -0.0619                & -0.0632                & 0.1073                 & 2.1596                 & 1.2452                 & 0.1072                   & 0.9280                 \\
+            &             & $\rho{P_1B_2}$ & 0.0460                 & 0.0473                 & 0.0986                 & 2.9042                 & 1.3552                 & 0.0985                   & 0.9500                 \\
+            &             & $\rho{P_1O_1}$ & -0.0962                & -0.0950                & 0.0971                 & -1.1919                & 1.1799                 & 0.0971                   & 0.9540                 \\
+            &             & $\rho{P_1O_2}$ & -0.1050                & -0.1034                & 0.0946                 & -1.4833                & 1.6473                 & 0.0945                   & 0.9620                 \\
+            &             & $\rho{P_2B_1}$ & -0.0405                & -0.0385                & 0.0971                 & -4.9782                & 2.0790                 & 0.0971                   & 0.9470                 \\
+            &             & $\rho{P_2B_2}$ & -0.0672                & -0.0702                & 0.1008                 & 4.3457                 & 2.8995                 & 0.1008                   & 0.9420                 \\
+            &             & $\rho{P_2O_1}$ & 0.1549                 & 0.1521                 & 0.0996                 & -1.8303                & 2.8463                 & 0.0996                   & 0.9390                 \\
+            &             & $\rho{P_2O_2}$ & 0.1468                 & 0.1424                 & 0.1018                 & -2.9973                & 4.3226                 & 0.1019                   & 0.9460                 \\
+            &             & $\rho{B_1B_2}$ & 0.0897                 & 0.0803                 & 0.1147                 & -10.4572               & 8.1773                 & 0.1150                   & 0.9050                 \\
+            &             & $\rho{B_1O_1}$ & 0.0209                 & 0.0175                 & 0.1007                 & -16.3906               & 3.4006                 & 0.1007                   & 0.9480                 \\
+            &             & $\rho{B_1O_2}$ & -0.1080                & -0.1061                & 0.1081                 & -1.7358                & 1.7338                 & 0.1081                   & 0.9200                 \\
+            &             & $\rho{B_2O_1}$ & 0.0681                 & 0.0671                 & 0.0888                 & -1.4635                & 1.1216                 & 0.0888                   & 0.9720                 \\
+            &             & $\rho{B_2O_2}$ & 0.1476                 & 0.1518                 & 0.0719                 & 2.8645                 & 5.8767                 & 0.0720                   & 0.9920                 \\
+            &             & $\rho{O_1O_2}$ & -0.0526                & -0.0526                & 0.1012                 & 0.0605                 & 0.0315                 & 0.1011                   & 0.9470                 \\ \hline
+10000       & $P_1$       & $\lambda_1$    & 2.0000                 & 1.9995                 & 0.0143                 & -0.0263                & 3.6637                 & 0.0143                   & 0.9420                 \\
+            & $P_2$       & $\lambda_2$    & 7.0000                 & 6.9999                 & 0.0258                 & -0.0020                & 0.5327                 & 0.0258                   & 0.9560                 \\
+            & $B_1$       & $p_1$          & 0.8000                 & 0.8001                 & 0.0039                 & 0.0183                 & 3.7198                 & 0.0039                   & 0.9520                 \\
+            & $B_2$       & $p_2$          & 0.9000                 & 0.8999                 & 0.0031                 & -0.0064                & 1.8729                 & 0.0031                   & 0.9420                 \\
+            & $O_1$       & $t_1$          & 0.6500                 & 0.6499                 & 0.0047                 & -0.0088                & 1.2048                 & 0.0047                   & 0.9530                 \\
+            &             & $t_2$          & 0.8000                 & 0.8000                 & 0.0040                 & -0.0047                & 0.9360                 & 0.0040                   & 0.9600                 \\
+            &             & $t_3$          & 0.9000                 & 0.9000                 & 0.0031                 & -0.0012                & 0.3436                 & 0.0031                   & 0.9550                 \\
+            & $O_2$       & $t_1$          & 0.5000                 & 0.5000                 & 0.0050                 & -0.0044                & 0.4401                 & 0.0050                   & 0.9420                 \\
+            &             & $t_2$          & 0.8000                 & 0.8001                 & 0.0039                 & 0.0083                 & 1.6814                 & 0.0039                   & 0.9540                 \\
+            &             & $t_3$          & 0.9000                 & 0.9000                 & 0.0030                 & 0.0007                 & 0.2112                 & 0.0030                   & 0.9490                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.0172                 & 0.0177                 & 0.0099                 & 2.8101                 & 4.9052                 & 0.0099                   & 0.9470                 \\
+            &             & $\rho{P_1B_1}$ & -0.0619                & -0.0627                & 0.0104                 & 1.3465                 & 7.9766                 & 0.0105                   & 0.9320                 \\
+            &             & $\rho{P_1B_2}$ & 0.0460                 & 0.0452                 & 0.0099                 & -1.7359                & 8.0515                 & 0.0099                   & 0.9450                 \\
+            &             & $\rho{P_1O_1}$ & -0.0962                & -0.0945                & 0.0095                 & -1.6856                & 17.1194                & 0.0096                   & 0.9560                 \\
+            &             & $\rho{P_1O_2}$ & -0.1050                & -0.1035                & 0.0096                 & -1.4060                & 15.3555                & 0.0097                   & 0.9600                 \\
+            &             & $\rho{P_2B_1}$ & -0.0405                & -0.0405                & 0.0099                 & -0.1261                & 0.5188                 & 0.0099                   & 0.9400                 \\
+            &             & $\rho{P_2B_2}$ & -0.0672                & -0.0684                & 0.0105                 & 1.7352                 & 11.0966                & 0.0106                   & 0.9330                 \\
+            &             & $\rho{P_2O_1}$ & 0.1549                 & 0.1562                 & 0.0098                 & 0.8458                 & 13.4212                & 0.0098                   & 0.9400                 \\
+            &             & $\rho{P_2O_2}$ & 0.1468                 & 0.1472                 & 0.0102                 & 0.2822                 & 4.0702                 & 0.0102                   & 0.9430                 \\
+            &             & $\rho{B_1B_2}$ & 0.0897                 & 0.0893                 & 0.0114                 & -0.3827                & 3.0228                 & 0.0114                   & 0.9170                 \\
+            &             & $\rho{B_1O_1}$ & 0.0209                 & 0.0213                 & 0.0097                 & 1.8356                 & 3.9361                 & 0.0097                   & 0.9550                 \\
+            &             & $\rho{B_1O_2}$ & -0.1080                & -0.1081                & 0.0105                 & 0.0704                 & 0.7274                 & 0.0105                   & 0.9340                 \\
+            &             & $\rho{B_2O_1}$ & 0.0681                 & 0.0683                 & 0.0089                 & 0.3796                 & 2.8931                 & 0.0089                   & 0.9740                 \\
+            &             & $\rho{B_2O_2}$ & 0.1476                 & 0.1475                 & 0.0077                 & -0.0732                & 1.3938                 & 0.0077                   & 0.9900                 \\
+            &             & $\rho{O_1O_2}$ & -0.0526                & -0.0533                & 0.0099                 & 1.2760                 & 6.7619                 & 0.0099                   & 0.9550                 \\  \hline
+\end{tabular}
+\end{table}
+
+
+
+
+\begin{table}[h]
+\centering
+\caption{Scenario 09/10 - random correlation, small Poisson rate and balanced binary/ordinal distribution}
+\begin{tabular}{cccrrrrrrr}
+\hline
+Sample Size & Variable    & Parameter      & \multicolumn{1}{c}{TV} & \multicolumn{1}{c}{AE} & \multicolumn{1}{c}{SD} & \multicolumn{1}{c}{RB} & \multicolumn{1}{c}{SB} & \multicolumn{1}{c}{RMSE} & \multicolumn{1}{c}{CR} \\\hline
+100         & $P_1$       & $\lambda_1$    & 0.2000                 & 0.2014                 & 0.0442                 & 0.7150                 & 3.2327                 & 0.0442                   & 0.9420                 \\
+            & $P_2$       & $\lambda_2$    & 0.7000                 & 0.7054                 & 0.0851                 & 0.7771                 & 6.3958                 & 0.0852                   & 0.9530                 \\
+            & $B_1$       & $p_1$          & 0.4500                 & 0.4469                 & 0.0514                 & -0.6911                & 6.0548                 & 0.0514                   & 0.9350                 \\
+            & $B_2$       & $p_2$          & 0.5000                 & 0.5001                 & 0.0503                 & 0.0260                 & 0.2585                 & 0.0503                   & 0.9430                 \\
+            & $O_1$       & $t_1$          & 0.2500                 & 0.2509                 & 0.0435                 & 0.3720                 & 2.1356                 & 0.0435                   & 0.9480                 \\
+            &             & $t_2$          & 0.5000                 & 0.4992                 & 0.0488                 & -0.1600                & 1.6379                 & 0.0488                   & 0.9370                 \\
+            &             & $t_3$          & 0.7500                 & 0.7495                 & 0.0433                 & -0.0720                & 1.2459                 & 0.0433                   & 0.9160                 \\
+            & $O_2$       & $t_1$          & 0.2000                 & 0.1980                 & 0.0418                 & -1.0250                & 4.9035                 & 0.0418                   & 0.9460                 \\
+            &             & $t_2$          & 0.4500                 & 0.4482                 & 0.0504                 & -0.4022                & 3.5908                 & 0.0504                   & 0.9510                 \\
+            &             & $t_3$          & 0.7500                 & 0.7482                 & 0.0438                 & -0.2427                & 4.1572                 & 0.0438                   & 0.9440                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.3712                 & 0.3036                 & 0.1144                 & -18.1924               & 59.0313                & 0.1328                   & 0.8090                 \\
+            &             & $\rho{P_1B_1}$ & -0.2252                & -0.2489                & 0.0783                 & 10.5374                & 30.2901                & 0.0818                   & 0.9720                 \\
+            &             & $\rho{P_1B_2}$ & 0.4275                 & 0.3351                 & 0.0751                 & -21.6005               & 122.9551               & 0.1190                   & 0.8500                 \\
+            &             & $\rho{P_1O_1}$ & 0.3816                 & 0.3009                 & 0.0818                 & -21.1568               & 98.7318                & 0.1149                   & 0.8830                 \\
+            &             & $\rho{P_1O_2}$ & 0.0918                 & 0.1180                 & 0.0959                 & 28.4337                & 27.2292                & 0.0993                   & 0.9340                 \\
+            &             & $\rho{P_2B_1}$ & -0.3767                & -0.3348                & 0.0821                 & -11.1213               & 51.0185                & 0.0921                   & 0.9400                 \\
+            &             & $\rho{P_2B_2}$ & -0.0998                & -0.0300                & 0.0977                 & -69.9505               & 71.4608                & 0.1200                   & 0.8960                 \\
+            &             & $\rho{P_2O_1}$ & 0.0924                 & 0.1551                 & 0.0961                 & 67.9575                & 65.2882                & 0.1148                   & 0.9020                 \\
+            &             & $\rho{P_2O_2}$ & 0.5705                 & 0.5382                 & 0.0645                 & -5.6620                & 50.0909                & 0.0721                   & 0.9490                 \\
+            &             & $\rho{B_1B_2}$ & -0.3303                & -0.2869                & 0.0990                 & -13.1336               & 43.8056                & 0.1081                   & 0.9010                 \\
+            &             & $\rho{B_1O_1}$ & -0.3954                & -0.3559                & 0.0884                 & -9.9791                & 44.6256                & 0.0968                   & 0.9170                 \\
+            &             & $\rho{B_1O_2}$ & -0.5631                & -0.5795                & 0.0669                 & 2.9159                 & 24.5563                & 0.0688                   & 0.9250                 \\
+            &             & $\rho{B_2O_1}$ & -0.1481                & -0.0733                & 0.1004                 & -50.5181               & 74.5146                & 0.1252                   & 0.8910                 \\
+            &             & $\rho{B_2O_2}$ & 0.0354                 & 0.0010                 & 0.0989                 & -97.0898               & 34.7104                & 0.1047                   & 0.9410                 \\
+            &             & $\rho{O_1O_2}$ & 0.3750                 & 0.3458                 & 0.0890                 & -7.7909                & 32.8234                & 0.0936                   & 0.9370                 \\\hline
+10000       & $P_1$       & $\lambda_1$    & 0.2000                 & 0.1998                 & 0.0046                 & -0.0879                & 3.8004                 & 0.0046                   & 0.9380                 \\
+            & $P_2$       & $\lambda_2$    & 0.7000                 & 0.6997                 & 0.0086                 & -0.0462                & 3.7689                 & 0.0086                   & 0.9470                 \\
+            & $B_1$       & $p_1$          & 0.4500                 & 0.4501                 & 0.0050                 & 0.0163                 & 1.4711                 & 0.0050                   & 0.9480                 \\
+            & $B_2$       & $p_2$          & 0.5000                 & 0.5002                 & 0.0050                 & 0.0448                 & 4.4852                 & 0.0050                   & 0.9490                 \\
+            & $O_1$       & $t_1$          & 0.2500                 & 0.2500                 & 0.0044                 & 0.0079                 & 0.4448                 & 0.0044                   & 0.9480                 \\
+            &             & $t_2$          & 0.5000                 & 0.5001                 & 0.0051                 & 0.0141                 & 1.3938                 & 0.0051                   & 0.9490                 \\
+            &             & $t_3$          & 0.7500                 & 0.7499                 & 0.0044                 & -0.0160                & 2.7522                 & 0.0044                   & 0.9540                 \\
+            & $O_2$       & $t_1$          & 0.2000                 & 0.2000                 & 0.0040                 & -0.0121                & 0.6026                 & 0.0040                   & 0.9520                 \\
+            &             & $t_2$          & 0.4500                 & 0.4501                 & 0.0052                 & 0.0206                 & 1.7964                 & 0.0052                   & 0.9470                 \\
+            &             & $t_3$          & 0.7500                 & 0.7501                 & 0.0045                 & 0.0106                 & 1.7777                 & 0.0045                   & 0.9460                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.3712                 & 0.3064                 & 0.0110                 & -17.4409               & 588.9485               & 0.0657                   & 0.0000                 \\
+            &             & $\rho{P_1B_1}$ & -0.2252                & -0.2468                & 0.0079                 & 9.6060                 & 273.2154               & 0.0230                   & 0.3340                 \\
+            &             & $\rho{P_1B_2}$ & 0.4275                 & 0.3362                 & 0.0073                 & -21.3427               & 1254.7885              & 0.0915                   & 0.0000                 \\
+            &             & $\rho{P_1O_1}$ & 0.3816                 & 0.3042                 & 0.0083                 & -20.2882               & 932.4564               & 0.0779                   & 0.0000                 \\
+            &             & $\rho{P_1O_2}$ & 0.0918                 & 0.1193                 & 0.0094                 & 29.8656                & 292.6293               & 0.0290                   & 0.2020                 \\
+            &             & $\rho{P_2B_1}$ & -0.3767                & -0.3385                & 0.0081                 & -10.1403               & 470.7302               & 0.0390                   & 0.0050                 \\
+            &             & $\rho{P_2B_2}$ & -0.0998                & -0.0278                & 0.0097                 & -72.1006               & 743.9126               & 0.0726                   & 0.0000                 \\
+            &             & $\rho{P_2O_1}$ & 0.0924                 & 0.1595                 & 0.0091                 & 72.6383                & 734.2651               & 0.0677                   & 0.0000                 \\
+            &             & $\rho{P_2O_2}$ & 0.5705                 & 0.5397                 & 0.0060                 & -5.3960                & 509.0141               & 0.0314                   & 0.0010                 \\
+            &             & $\rho{B_1B_2}$ & -0.3303                & -0.2868                & 0.0100                 & -13.1745               & 436.3842               & 0.0446                   & 0.0070                 \\
+            &             & $\rho{B_1O_1}$ & -0.3954                & -0.3567                & 0.0091                 & -9.7845                & 423.6002               & 0.0397                   & 0.0020                 \\
+            &             & $\rho{B_1O_2}$ & -0.5631                & -0.5801                & 0.0069                 & 3.0293                 & 245.8231               & 0.0184                   & 0.2820                 \\
+            &             & $\rho{B_2O_1}$ & -0.1481                & -0.0713                & 0.0101                 & -51.8298               & 757.9108               & 0.0774                   & 0.0000                 \\
+            &             & $\rho{B_2O_2}$ & 0.0354                 & 0.0048                 & 0.0100                 & -86.4372               & 305.1975               & 0.0322                   & 0.1330                 \\
+            &             & $\rho{O_1O_2}$ & 0.3750                 & 0.3456                 & 0.0091                 & -7.8511                & 323.3223               & 0.0308                   & 0.0840                 \\\hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[h]
+\centering
+\caption{Scenario 11/12 - weak correlation, small Poisson rate and balanced binary/ordinal distribution}
+\begin{tabular}{cccrrrrrrr}
+\hline
+Sample Size & Variable    & Parameter      & \multicolumn{1}{c}{TV} & \multicolumn{1}{c}{AE} & \multicolumn{1}{c}{SD} & \multicolumn{1}{c}{RB} & \multicolumn{1}{c}{SB} & \multicolumn{1}{c}{RMSE} & \multicolumn{1}{c}{CR} \\\hline
+100         & $P_1$       & $\lambda_1$    & 0.2000                 & 0.2005                 & 0.0442                 & 0.2500                 & 1.1316                 & 0.0442                   & 0.9470                 \\
+            & $P_2$       & $\lambda_2$    & 0.7000                 & 0.6978                 & 0.0827                 & -0.3129                & 2.6482                 & 0.0827                   & 0.9520                 \\
+            & $B_1$       & $p_1$          & 0.4500                 & 0.4496                 & 0.0491                 & -0.0844                & 0.7735                 & 0.0491                   & 0.9420                 \\
+            & $B_2$       & $p_2$          & 0.5000                 & 0.4990                 & 0.0502                 & -0.2100                & 2.0927                 & 0.0502                   & 0.9370                 \\
+            & $O_1$       & $t_1$          & 0.2500                 & 0.2493                 & 0.0442                 & -0.2800                & 1.5821                 & 0.0442                   & 0.9400                 \\
+            &             & $t_2$          & 0.5000                 & 0.4998                 & 0.0510                 & -0.0460                & 0.4511                 & 0.0510                   & 0.9360                 \\
+            &             & $t_3$          & 0.7500                 & 0.7500                 & 0.0435                 & 0.0000                 & 0.0000                 & 0.0434                   & 0.9250                 \\
+            & $O_2$       & $t_1$          & 0.2000                 & 0.1968                 & 0.0399                 & -1.5850                & 7.9408                 & 0.0400                   & 0.9460                 \\
+            &             & $t_2$          & 0.4500                 & 0.4505                 & 0.0508                 & 0.1022                 & 0.9062                 & 0.0507                   & 0.9290                 \\
+            &             & $t_3$          & 0.7500                 & 0.7487                 & 0.0456                 & -0.1733                & 2.8506                 & 0.0456                   & 0.9320                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.0172                 & 0.0149                 & 0.0995                 & -13.7388               & 2.3786                 & 0.0994                   & 0.9540                 \\
+            &             & $\rho{P_1B_1}$ & -0.0619                & -0.0628                & 0.0994                 & 1.5404                 & 0.9588                 & 0.0993                   & 0.9470                 \\
+            &             & $\rho{P_1B_2}$ & 0.0460                 & 0.0485                 & 0.0978                 & 5.5041                 & 2.5877                 & 0.0978                   & 0.9530                 \\
+            &             & $\rho{P_1O_1}$ & -0.0962                & -0.0955                & 0.0950                 & -0.7321                & 0.7410                 & 0.0950                   & 0.9600                 \\
+            &             & $\rho{P_1O_2}$ & -0.1050                & -0.1002                & 0.0971                 & -4.5392                & 4.9074                 & 0.0972                   & 0.9540                 \\
+            &             & $\rho{P_2B_1}$ & -0.0405                & -0.0417                & 0.0983                 & 2.9416                 & 1.2135                 & 0.0983                   & 0.9590                 \\
+            &             & $\rho{P_2B_2}$ & -0.0672                & -0.0638                & 0.1009                 & -5.1396                & 3.4248                 & 0.1009                   & 0.9460                 \\
+            &             & $\rho{P_2O_1}$ & 0.1549                 & 0.1551                 & 0.1003                 & 0.0874                 & 0.1350                 & 0.1003                   & 0.9410                 \\
+            &             & $\rho{P_2O_2}$ & 0.1468                 & 0.1483                 & 0.0975                 & 0.9772                 & 1.4717                 & 0.0975                   & 0.9530                 \\
+            &             & $\rho{B_1B_2}$ & 0.0897                 & 0.0921                 & 0.1026                 & 2.6919                 & 2.3528                 & 0.1026                   & 0.9430                 \\
+            &             & $\rho{B_1O_1}$ & 0.0209                 & 0.0179                 & 0.0994                 & -14.4660               & 3.0401                 & 0.0994                   & 0.9510                 \\
+            &             & $\rho{B_1O_2}$ & -0.1080                & -0.1052                & 0.0964                 & -2.5911                & 2.9033                 & 0.0964                   & 0.9560                 \\
+            &             & $\rho{B_2O_1}$ & 0.0681                 & 0.0701                 & 0.1007                 & 3.0470                 & 2.0592                 & 0.1007                   & 0.9480                 \\
+            &             & $\rho{B_2O_2}$ & 0.1476                 & 0.1439                 & 0.0981                 & -2.5112                & 3.7770                 & 0.0982                   & 0.9440                 \\
+            &             & $\rho{O_1O_2}$ & -0.0526                & -0.0520                & 0.1001                 & -1.0517                & 0.5527                 & 0.1000                   & 0.9470                 \\\hline
+10000       & $P_1$       & $\lambda_1$    & 0.2000                 & 0.2001                 & 0.0044                 & 0.0662                 & 3.0201                 & 0.0044                   & 0.9550                 \\
+            & $P_2$       & $\lambda_2$    & 0.7000                 & 0.6996                 & 0.0086                 & -0.0541                & 4.4001                 & 0.0086                   & 0.9490                 \\
+            & $B_1$       & $p_1$          & 0.4500                 & 0.4501                 & 0.0050                 & 0.0138                 & 1.2351                 & 0.0050                   & 0.9460                 \\
+            & $B_2$       & $p_2$          & 0.5000                 & 0.4997                 & 0.0049                 & -0.0610                & 6.2412                 & 0.0049                   & 0.9570                 \\
+            & $O_1$       & $t_1$          & 0.2500                 & 0.2501                 & 0.0045                 & 0.0203                 & 1.1352                 & 0.0045                   & 0.9450                 \\
+            &             & $t_2$          & 0.5000                 & 0.5000                 & 0.0051                 & -0.0057                & 0.5580                 & 0.0051                   & 0.9400                 \\
+            &             & $t_3$          & 0.7500                 & 0.7501                 & 0.0041                 & 0.0138                 & 2.4967                 & 0.0041                   & 0.9550                 \\
+            & $O_2$       & $t_1$          & 0.2000                 & 0.2001                 & 0.0040                 & 0.0465                 & 2.3025                 & 0.0040                   & 0.9620                 \\
+            &             & $t_2$          & 0.4500                 & 0.4501                 & 0.0050                 & 0.0161                 & 1.4407                 & 0.0050                   & 0.9450                 \\
+            &             & $t_3$          & 0.7500                 & 0.7503                 & 0.0043                 & 0.0437                 & 7.6743                 & 0.0043                   & 0.9560                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.0172                 & 0.0197                 & 0.0101                 & 14.5791                & 24.8092                & 0.0104                   & 0.9450                 \\
+            &             & $\rho{P_1B_1}$ & -0.0619                & -0.0615                & 0.0092                 & -0.5137                & 3.4550                 & 0.0092                   & 0.9660                 \\
+            &             & $\rho{P_1B_2}$ & 0.0460                 & 0.0460                 & 0.0102                 & -0.1012                & 0.4545                 & 0.0102                   & 0.9410                 \\
+            &             & $\rho{P_1O_1}$ & -0.0962                & -0.0954                & 0.0100                 & -0.8153                & 7.8785                 & 0.0100                   & 0.9570                 \\
+            &             & $\rho{P_1O_2}$ & -0.1050                & -0.1053                & 0.0098                 & 0.3148                 & 3.3805                 & 0.0098                   & 0.9530                 \\
+            &             & $\rho{P_2B_1}$ & -0.0405                & -0.0402                & 0.0098                 & -0.7422                & 3.0615                 & 0.0098                   & 0.9590                 \\
+            &             & $\rho{P_2B_2}$ & -0.0672                & -0.0670                & 0.0100                 & -0.2784                & 1.8779                 & 0.0100                   & 0.9480                 \\
+            &             & $\rho{P_2O_1}$ & 0.1549                 & 0.1550                 & 0.0097                 & 0.0345                 & 0.5497                 & 0.0097                   & 0.9460                 \\
+            &             & $\rho{P_2O_2}$ & 0.1468                 & 0.1459                 & 0.0095                 & -0.6182                & 9.5337                 & 0.0096                   & 0.9520                 \\
+            &             & $\rho{B_1B_2}$ & 0.0897                 & 0.0891                 & 0.0101                 & -0.6855                & 6.1165                 & 0.0101                   & 0.9420                 \\
+            &             & $\rho{B_1O_1}$ & 0.0209                 & 0.0212                 & 0.0097                 & 1.5166                 & 3.2714                 & 0.0097                   & 0.9550                 \\
+            &             & $\rho{B_1O_2}$ & -0.1080                & -0.1085                & 0.0098                 & 0.4387                 & 4.8277                 & 0.0098                   & 0.9610                 \\
+            &             & $\rho{B_2O_1}$ & 0.0681                 & 0.0686                 & 0.0100                 & 0.8376                 & 5.7179                 & 0.0100                   & 0.9390                 \\
+            &             & $\rho{B_2O_2}$ & 0.1476                 & 0.1473                 & 0.0102                 & -0.2288                & 3.3156                 & 0.0102                   & 0.9410                 \\
+            &             & $\rho{O_1O_2}$ & -0.0526                & -0.0526                & 0.0095                 & 0.0789                 & 0.4347                 & 0.0095                   & 0.9640                 \\ \hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[h]
+\centering
+\caption{Scenario 13/14 - random correlation, small Poisson rate and imbalanced binary/ordinal distribution}
+\begin{tabular}{cccrrrrrrr}
+\hline
+Sample Size & Variable    & Parameter      & \multicolumn{1}{c}{TV} & \multicolumn{1}{c}{AE} & \multicolumn{1}{c}{SD} & \multicolumn{1}{c}{RB} & \multicolumn{1}{c}{SB} & \multicolumn{1}{c}{RMSE} & \multicolumn{1}{c}{CR} \\\hline
+100         & $P_1$       & $\lambda_1$    & 0.2000                 & 0.1999                 & 0.0451                 & -0.0550                & 0.2437                 & 0.0451                   & 0.9330                 \\
+            & $P_2$       & $\lambda_2$    & 0.7000                 & 0.6998                 & 0.0814                 & -0.0257                & 0.2211                 & 0.0814                   & 0.9560                 \\
+            & $B_1$       & $p_1$          & 0.8000                 & 0.8009                 & 0.0399                 & 0.1162                 & 2.3318                 & 0.0399                   & 0.9330                 \\
+            & $B_2$       & $p_2$          & 0.9000                 & 0.9007                 & 0.0292                 & 0.0744                 & 2.2961                 & 0.0292                   & 0.9400                 \\
+            & $O_1$       & $t_1$          & 0.6500                 & 0.6492                 & 0.0469                 & -0.1262                & 1.7493                 & 0.0469                   & 0.9400                 \\
+            &             & $t_2$          & 0.8000                 & 0.8002                 & 0.0383                 & 0.0287                 & 0.5998                 & 0.0383                   & 0.9340                 \\
+            &             & $t_3$          & 0.9000                 & 0.8997                 & 0.0290                 & -0.0356                & 1.1035                 & 0.0290                   & 0.9400                 \\
+            & $O_2$       & $t_1$          & 0.5000                 & 0.5021                 & 0.0505                 & 0.4140                 & 4.1026                 & 0.0505                   & 0.9420                 \\
+            &             & $t_2$          & 0.8000                 & 0.7995                 & 0.0398                 & -0.0675                & 1.3556                 & 0.0398                   & 0.9470                 \\
+            &             & $t_3$          & 0.9000                 & 0.8992                 & 0.0305                 & -0.0944                & 2.7844                 & 0.0305                   & 0.9320                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.4811                 & 0.4606                 & 0.0992                 & -4.2562                & 20.6378                & 0.1013                   & 0.8730                 \\
+            &             & $\rho{P_1B_1}$ & -0.3434                & -0.5032                & 0.1051                 & 46.5539                & 152.0598               & 0.1913                   & 0.4740                 \\
+            &             & $\rho{P_1B_2}$ & -0.1249                & -0.1562                & 0.1323                 & 25.1122                & 23.7090                & 0.1359                   & 0.8330                 \\
+            &             & $\rho{P_1O_1}$ & 0.5349                 & 0.6658                 & 0.0803                 & 24.4635                & 162.8941               & 0.1535                   & 0.4280                 \\
+            &             & $\rho{P_1O_2}$ & -0.1313                & -0.0884                & 0.0915                 & -32.6478               & 46.8207                & 0.1010                   & 0.9420                 \\
+            &             & $\rho{P_2B_1}$ & -0.4763                & -0.5258                & 0.0824                 & 10.4102                & 60.1415                & 0.0962                   & 0.8410                 \\
+            &             & $\rho{P_2B_2}$ & 0.0496                 & 0.0339                 & 0.0941                 & -31.6626               & 16.7053                & 0.0953                   & 0.9550                 \\
+            &             & $\rho{P_2O_1}$ & 0.2603                 & 0.3297                 & 0.1029                 & 26.6784                & 67.4691                & 0.1241                   & 0.8330                 \\
+            &             & $\rho{P_2O_2}$ & 0.1111                 & 0.0817                 & 0.1047                 & -26.4997               & 28.1400                & 0.1087                   & 0.9150                 \\
+            &             & $\rho{B_1B_2}$ & 0.3770                 & 0.3547                 & 0.1227                 & -5.9325                & 18.2229                & 0.1247                   & 0.8260                 \\
+            &             & $\rho{B_1O_1}$ & -0.3716                & -0.3397                & 0.1116                 & -8.5819                & 28.5833                & 0.1160                   & 0.8610                 \\
+            &             & $\rho{B_1O_2}$ & 0.2440                 & 0.2265                 & 0.0766                 & -7.1995                & 22.9279                & 0.0786                   & 0.9770                 \\
+            &             & $\rho{B_2O_1}$ & -0.0941                & -0.0912                & 0.1125                 & -3.0621                & 2.5618                 & 0.1125                   & 0.9090                 \\
+            &             & $\rho{B_2O_2}$ & 0.2622                 & 0.2573                 & 0.0457                 & -1.8551                & 10.6453                & 0.0459                   & 0.9990                 \\
+            &             & $\rho{O_1O_2}$ & 0.2451                 & 0.1896                 & 0.1054                 & -22.6314               & 52.6055                & 0.1191                   & 0.8950                 \\\hline
+10000       & $P_1$       & $\lambda_1$    & 0.2000                 & 0.2000                 & 0.0047                 & 0.0049                 & 0.2085                 & 0.0046                   & 0.9380                 \\
+            & $P_2$       & $\lambda_2$    & 0.7000                 & 0.7001                 & 0.0087                 & 0.0109                 & 0.8809                 & 0.0086                   & 0.9440                 \\
+            & $B_1$       & $p_1$          & 0.8000                 & 0.8000                 & 0.0041                 & 0.0031                 & 0.6049                 & 0.0041                   & 0.9510                 \\
+            & $B_2$       & $p_2$          & 0.9000                 & 0.8999                 & 0.0029                 & -0.0069                & 2.1405                 & 0.0029                   & 0.9570                 \\
+            & $O_1$       & $t_1$          & 0.6500                 & 0.6502                 & 0.0049                 & 0.0316                 & 4.2338                 & 0.0049                   & 0.9430                 \\
+            &             & $t_2$          & 0.8000                 & 0.8002                 & 0.0040                 & 0.0247                 & 4.9075                 & 0.0040                   & 0.9470                 \\
+            &             & $t_3$          & 0.9000                 & 0.9002                 & 0.0030                 & 0.0167                 & 5.0135                 & 0.0030                   & 0.9400                 \\
+            & $O_2$       & $t_1$          & 0.5000                 & 0.5001                 & 0.0051                 & 0.0220                 & 2.1500                 & 0.0051                   & 0.9470                 \\
+            &             & $t_2$          & 0.8000                 & 0.7999                 & 0.0041                 & -0.0076                & 1.4758                 & 0.0041                   & 0.9510                 \\
+            &             & $t_3$          & 0.9000                 & 0.9000                 & 0.0032                 & -0.0048                & 1.3706                 & 0.0032                   & 0.9500                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.4811                 & 0.4614                 & 0.0106                 & -4.0913                & 186.5482               & 0.0223                   & 0.3190                 \\
+            &             & $\rho{P_1B_1}$ & -0.3434                & -0.5018                & 0.0103                 & 46.1429                & 1534.0222              & 0.1588                   & 0.0000                 \\
+            &             & $\rho{P_1B_2}$ & -0.1249                & -0.1579                & 0.0130                 & 26.4766                & 253.8010               & 0.0355                   & 0.1420                 \\
+            &             & $\rho{P_1O_1}$ & 0.5349                 & 0.6701                 & 0.0075                 & 25.2706                & 1798.6662              & 0.1354                   & 0.0000                 \\
+            &             & $\rho{P_1O_2}$ & -0.1313                & -0.0873                & 0.0091                 & -33.5133               & 480.9068               & 0.0449                   & 0.0010                 \\
+            &             & $\rho{P_2B_1}$ & -0.4763                & -0.5229                & 0.0084                 & 9.7997                 & 555.4842               & 0.0474                   & 0.0000                 \\
+            &             & $\rho{P_2B_2}$ & 0.0496                 & 0.0396                 & 0.0094                 & -20.2819               & 106.7437               & 0.0138                   & 0.8480                 \\
+            &             & $\rho{P_2O_1}$ & 0.2603                 & 0.3280                 & 0.0101                 & 26.0471                & 669.4777               & 0.0685                   & 0.0000                 \\
+            &             & $\rho{P_2O_2}$ & 0.1111                 & 0.0833                 & 0.0104                 & -24.9997               & 268.1195               & 0.0297                   & 0.2060                 \\
+            &             & $\rho{B_1B_2}$ & 0.3770                 & 0.3559                 & 0.0125                 & -5.5989                & 169.2863               & 0.0245                   & 0.3540                 \\
+            &             & $\rho{B_1O_1}$ & -0.3716                & -0.3367                & 0.0107                 & -9.4019                & 325.4799               & 0.0365                   & 0.0460                 \\
+            &             & $\rho{B_1O_2}$ & 0.2440                 & 0.2304                 & 0.0075                 & -5.5832                & 182.0283               & 0.0155                   & 0.7490                 \\
+            &             & $\rho{B_2O_1}$ & -0.0941                & -0.0903                & 0.0110                 & -4.0532                & 34.8265                & 0.0116                   & 0.9090                 \\
+            &             & $\rho{B_2O_2}$ & 0.2622                 & 0.2614                 & 0.0044                 & -0.3000                & 17.6946                & 0.0045                   & 1.0000                 \\
+            &             & $\rho{O_1O_2}$ & 0.2451                 & 0.1910                 & 0.0104                 & -22.0612               & 517.6334               & 0.0551                   & 0.0000                 \\\hline
+\end{tabular}
+\end{table}
+
+
+
+\begin{table}[h]
+\centering
+\caption{Scenario 15/16 - weak correlation, small Poisson rate and imbalanced binary/ordinal distribution}
+\begin{tabular}{cccrrrrrrr}
+\hline
+Sample Size & Variable    & Parameter      & \multicolumn{1}{c}{TV} & \multicolumn{1}{c}{AE} & \multicolumn{1}{c}{SD} & \multicolumn{1}{c}{RB} & \multicolumn{1}{c}{SB} & \multicolumn{1}{c}{RMSE} & \multicolumn{1}{c}{CR} \\\hline
+100         & $P_1$       & $\lambda_1$    & 0.2000                 & 0.2011                 & 0.0470                 & 0.5550                 & 2.3602                 & 0.0470                   & 0.9220                 \\
+            & $P_2$       & $\lambda_2$    & 0.7000                 & 0.7020                 & 0.0825                 & 0.2814                 & 2.3883                 & 0.0825                   & 0.9590                 \\
+            & $B_1$       & $p_1$          & 0.8000                 & 0.7975                 & 0.0396                 & -0.3150                & 6.3692                 & 0.0396                   & 0.9370                 \\
+            & $B_2$       & $p_2$          & 0.9000                 & 0.8997                 & 0.0304                 & -0.0300                & 0.8874                 & 0.0304                   & 0.9340                 \\
+            & $O_1$       & $t_1$          & 0.6500                 & 0.6504                 & 0.0468                 & 0.0662                 & 0.9197                 & 0.0467                   & 0.9480                 \\
+            &             & $t_2$          & 0.8000                 & 0.8006                 & 0.0400                 & 0.0712                 & 1.4242                 & 0.0400                   & 0.9370                 \\
+            &             & $t_3$          & 0.9000                 & 0.8993                 & 0.0292                 & -0.0778                & 2.4002                 & 0.0292                   & 0.9520                 \\
+            & $O_2$       & $t_1$          & 0.5000                 & 0.4994                 & 0.0491                 & -0.1280                & 1.3045                 & 0.0490                   & 0.9310                 \\
+            &             & $t_2$          & 0.8000                 & 0.7993                 & 0.0404                 & -0.0825                & 1.6354                 & 0.0403                   & 0.9320                 \\
+            &             & $t_3$          & 0.9000                 & 0.8997                 & 0.0301                 & -0.0378                & 1.1283                 & 0.0301                   & 0.9310                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.0172                 & 0.0251                 & 0.1063                 & 45.4862                & 7.3680                 & 0.1065                   & 0.9360                 \\
+            &             & $\rho{P_1B_1}$ & -0.0619                & -0.0628                & 0.1052                 & 1.5171                 & 0.8924                 & 0.1051                   & 0.9440                 \\
+            &             & $\rho{P_1B_2}$ & 0.0460                 & 0.0479                 & 0.0868                 & 4.1982                 & 2.2260                 & 0.0867                   & 0.9720                 \\
+            &             & $\rho{P_1O_1}$ & -0.0962                & -0.0923                & 0.0884                 & -4.0359                & 4.3894                 & 0.0885                   & 0.9720                 \\
+            &             & $\rho{P_1O_2}$ & -0.1050                & -0.0993                & 0.0894                 & -5.4672                & 6.4216                 & 0.0895                   & 0.9690                 \\
+            &             & $\rho{P_2B_1}$ & -0.0405                & -0.0471                & 0.1057                 & 16.2741                & 6.2461                 & 0.1058                   & 0.9460                 \\
+            &             & $\rho{P_2B_2}$ & -0.0672                & -0.0756                & 0.1071                 & 12.4024                & 7.7895                 & 0.1073                   & 0.9300                 \\
+            &             & $\rho{P_2O_1}$ & 0.1549                 & 0.1627                 & 0.1087                 & 5.0129                 & 7.1481                 & 0.1089                   & 0.9130                 \\
+            &             & $\rho{P_2O_2}$ & 0.1468                 & 0.1524                 & 0.1044                 & 3.7728                 & 5.3068                 & 0.1045                   & 0.9240                 \\
+            &             & $\rho{B_1B_2}$ & 0.0897                 & 0.0870                 & 0.1148                 & -2.9310                & 2.2900                 & 0.1148                   & 0.9130                 \\
+            &             & $\rho{B_1O_1}$ & 0.0209                 & 0.0176                 & 0.0969                 & -15.7111               & 3.3865                 & 0.0969                   & 0.9530                 \\
+            &             & $\rho{B_1O_2}$ & -0.1080                & -0.1067                & 0.1062                 & -1.2228                & 1.2431                 & 0.1062                   & 0.9290                 \\
+            &             & $\rho{B_2O_1}$ & 0.0681                 & 0.0662                 & 0.0895                 & -2.7920                & 2.1246                 & 0.0894                   & 0.9770                 \\
+            &             & $\rho{B_2O_2}$ & 0.1476                 & 0.1452                 & 0.0713                 & -1.6152                & 3.3456                 & 0.0713                   & 0.9920                 \\
+            &             & $\rho{O_1O_2}$ & -0.0526                & -0.0492                & 0.0962                 & -6.4908                & 3.5478                 & 0.0962                   & 0.9580                 \\\hline
+10000       & $P_1$       & $\lambda_1$    & 0.2000                 & 0.1999                 & 0.0045                 & -0.0501                & 2.2245                 & 0.0045                   & 0.9490                 \\
+            & $P_2$       & $\lambda_2$    & 0.7000                 & 0.7001                 & 0.0083                 & 0.0165                 & 1.3951                 & 0.0083                   & 0.9500                 \\
+            & $B_1$       & $p_1$          & 0.8000                 & 0.8002                 & 0.0040                 & 0.0300                 & 5.9610                 & 0.0040                   & 0.9490                 \\
+            & $B_2$       & $p_2$          & 0.9000                 & 0.9001                 & 0.0030                 & 0.0113                 & 3.3572                 & 0.0030                   & 0.9410                 \\
+            & $O_1$       & $t_1$          & 0.6500                 & 0.6499                 & 0.0050                 & -0.0095                & 1.2445                 & 0.0050                   & 0.9410                 \\
+            &             & $t_2$          & 0.8000                 & 0.7999                 & 0.0041                 & -0.0092                & 1.8108                 & 0.0041                   & 0.9620                 \\
+            &             & $t_3$          & 0.9000                 & 0.8999                 & 0.0030                 & -0.0129                & 3.8432                 & 0.0030                   & 0.9530                 \\
+            & $O_2$       & $t_1$          & 0.5000                 & 0.4999                 & 0.0049                 & -0.0242                & 2.4439                 & 0.0049                   & 0.9560                 \\
+            &             & $t_2$          & 0.8000                 & 0.7998                 & 0.0039                 & -0.0191                & 3.8714                 & 0.0039                   & 0.9400                 \\
+            &             & $t_3$          & 0.9000                 & 0.8999                 & 0.0030                 & -0.0081                & 2.4519                 & 0.0030                   & 0.9550                 \\
+            & Correlation & $\rho{P_1P_2}$ & 0.0172                 & 0.0193                 & 0.0097                 & 12.1725                & 21.6611                & 0.0099                   & 0.9520                 \\
+            &             & $\rho{P_1B_1}$ & -0.0619                & -0.0650                & 0.0106                 & 5.1414                 & 29.8670                & 0.0111                   & 0.9180                 \\
+            &             & $\rho{P_1B_2}$ & 0.0460                 & 0.0426                 & 0.0088                 & -7.3484                & 38.4502                & 0.0094                   & 0.9590                 \\
+            &             & $\rho{P_1O_1}$ & -0.0962                & -0.0899                & 0.0085                 & -6.5609                & 74.2276                & 0.0106                   & 0.9370                 \\
+            &             & $\rho{P_1O_2}$ & -0.1050                & -0.0993                & 0.0088                 & -5.3898                & 64.1506                & 0.0105                   & 0.9420                 \\
+            &             & $\rho{P_2B_1}$ & -0.0405                & -0.0411                & 0.0102                 & 1.2961                 & 5.1523                 & 0.0102                   & 0.9480                 \\
+            &             & $\rho{P_2B_2}$ & -0.0672                & -0.0708                & 0.0105                 & 5.3360                 & 34.0149                & 0.0111                   & 0.9180                 \\
+            &             & $\rho{P_2O_1}$ & 0.1549                 & 0.1623                 & 0.0106                 & 4.7332                 & 68.8938                & 0.0129                   & 0.8580                 \\
+            &             & $\rho{P_2O_2}$ & 0.1468                 & 0.1508                 & 0.0107                 & 2.7025                 & 37.0181                & 0.0114                   & 0.9070                 \\
+            &             & $\rho{B_1B_2}$ & 0.0897                 & 0.0898                 & 0.0113                 & 0.1579                 & 1.2525                 & 0.0113                   & 0.9170                 \\
+            &             & $\rho{B_1O_1}$ & 0.0209                 & 0.0212                 & 0.0098                 & 1.3036                 & 2.7856                 & 0.0098                   & 0.9490                 \\
+            &             & $\rho{B_1O_2}$ & -0.1080                & -0.1080                & 0.0103                 & -0.0175                & 0.1832                 & 0.0103                   & 0.9470                 \\
+            &             & $\rho{B_2O_1}$ & 0.0681                 & 0.0685                 & 0.0082                 & 0.5891                 & 4.8953                 & 0.0082                   & 0.9790                 \\
+            &             & $\rho{B_2O_2}$ & 0.1476                 & 0.1476                 & 0.0075                 & -0.0230                & 0.4497                 & 0.0075                   & 0.9900                 \\
+            &             & $\rho{O_1O_2}$ & -0.0526                & -0.0521                & 0.0099                 & -1.0038                & 5.3125                 & 0.0099                   & 0.9480                 \\\hline
+\end{tabular}
+\end{table}
+\end{document}
+
