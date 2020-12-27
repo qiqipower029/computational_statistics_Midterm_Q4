@@ -37,7 +37,18 @@ gen.corr = function(seed, n.P, n.B, n.O,
         cor.mat[upper.tri(cor.mat)] = rho
         cor.mat = cor.mat + t(cor.mat) + diag(1,6)
         diag(cor.mat) = 1
-        stat = is.positive.definite(cor.mat)
+        if (is.positive.definite(cor.mat)){
+          cor.pp = cor.mat[1:2, 1:2]
+          cor.bo = cor.mat[3:6, 3:6]
+          cor.pbo = cor.mat
+          inter.pp = intermediate.corr.PP(n.P, lambda.vec, corr.mat = cor.pp)
+          inter.bo = intermediate.corr.BO(n.B, n.O, prop.vec = prop.vec, prop.list = prop.list, corr.mat = cor.bo)
+          inter.pbo = intermediate.corr.PBO(n.P, n.B, n.O, lambda.vec, prop.vec, prop.list, corr.mat = cor.mat)
+          inter.up = cbind(inter.pp, inter.pbo)
+          inter.bot = cbind(t(inter.pbo), inter.bo)
+          inter_cor = rbind(inter.up, inter.bot)
+          stat = is.positive.definite(inter_cor)
+        }
     }
     return(cor.mat)
 }
@@ -68,7 +79,7 @@ n.O = 2 # Number of ordinal variables
 lambda.vec = c(2, 7)
 prop.vec=c(0.45, 0.50)                              
 prop.list=list(c(0.25, 0.50, 0.75), c(0.20, 0.45, 0.75))  
-A1 = gen.corr(seed=1,n.P=n.P, n.B=n.B, n.O=n.O,
+A1 = gen.corr(seed=4,n.P=n.P, n.B=n.B, n.O=n.O,
              lambda.vec=lambda.vec, prop.vec=prop.vec, prop.list =prop.list)
 A1
 validation.corr(n.P,n.B,n.O,corr.vec=NULL,A1)
