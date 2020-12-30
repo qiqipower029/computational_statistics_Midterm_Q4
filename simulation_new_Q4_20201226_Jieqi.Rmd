@@ -18,7 +18,7 @@ library(openxlsx)    # Output Excel with multiple sheets
 # ----------- Generate random correlation matrix within boundaries--------------# 
 gen.corr = function(seed, n.P, n.B, n.O,
                     lambda.vec, prop.vec, prop.list) {
-    set.seed(seed)
+    set.seed(3)
     
     # Calculates the approximate upper and lower correlation bounds
     re = correlation.limits(n.P, n.B, n.O, lambda.vec,prop.vec,prop.list)
@@ -38,6 +38,7 @@ gen.corr = function(seed, n.P, n.B, n.O,
         cor.mat = cor.mat + t(cor.mat) + diag(1,6)
         diag(cor.mat) = 1
         if (is.positive.definite(cor.mat)){
+          cor.mat = overall.corr.mat(n.P, n.B, n.O, lambda.vec, prop.vec, prop.list, corr.mat = cor.mat)
           cor.pp = cor.mat[1:2, 1:2]
           cor.bo = cor.mat[3:6, 3:6]
           cor.pbo = cor.mat
@@ -68,6 +69,21 @@ corr.mat_W = N+t(N)    # symmetric matrix
 diag(corr.mat_W) = 1   
 B = corr.mat_W
 B
+
+set.seed(0814)
+W_Corr = runif(n=15, min = 0.001,max = 0.199)
+W_PN_Indicator = sample(c(-1,1), size = 15, replace = TRUE)
+W_Corr_Final = W_Corr*W_PN_Indicator
+
+# Create overall correlation matrix, SIGMA
+M = W_Corr_Final
+N = diag(6)  
+N[lower.tri(N)] = M  # lower triangle 
+corr.mat_W = N+t(N)    # symmetric matrix
+diag(corr.mat_W) = 1   
+A = corr.mat_W
+A
+write.csv(A, "new correlation.csv")
 ```
 
 ```{r create parameters}
@@ -79,30 +95,26 @@ n.O = 2 # Number of ordinal variables
 lambda.vec = c(2, 7)
 prop.vec=c(0.45, 0.50)                              
 prop.list=list(c(0.25, 0.50, 0.75), c(0.20, 0.45, 0.75))  
-A1 = gen.corr(seed=4,n.P=n.P, n.B=n.B, n.O=n.O,
-             lambda.vec=lambda.vec, prop.vec=prop.vec, prop.list =prop.list)
-A1
-validation.corr(n.P,n.B,n.O,corr.vec=NULL,A1)
-correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A1)
+
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,A)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A)
 validation.corr(n.P,n.B,n.O,corr.vec=NULL,B)
 correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,B)
 
-para_0102 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A1)
+para_0102 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A)
 para_0304 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = B)
 
 # scenario = large rate Poisson + imbalanced binary/ordinal
 lambda.vec = c(2, 7)
 prop.vec=c(0.80, 0.90)                              
 prop.list=list(c(0.65, 0.80, 0.90), c(0.50, 0.80, 0.90))  
-A2 = gen.corr(seed=1,n.P=n.P, n.B=n.B, n.O=n.O,
-             lambda.vec=lambda.vec, prop.vec=prop.vec, prop.list =prop.list)
-A2
-validation.corr(n.P,n.B,n.O,corr.vec=NULL,A2)
-correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A2)
+
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,A)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A)
 validation.corr(n.P,n.B,n.O,corr.vec=NULL,B)
 correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,B)
 
-para_0506 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A2)
+para_0506 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A)
 para_0708 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = B)
 
 
@@ -110,30 +122,26 @@ para_0708 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, pr
 lambda.vec = c(0.2, 0.7)
 prop.vec=c(0.45, 0.50)                                
 prop.list=list(c(0.25, 0.50, 0.75), c(0.20, 0.45, 0.75)) 
-A3 = gen.corr(seed=1,n.P=n.P, n.B=n.B, n.O=n.O,
-             lambda.vec=lambda.vec, prop.vec=prop.vec, prop.list =prop.list)
-A3
-validation.corr(n.P,n.B,n.O,corr.vec=NULL,A3)
-correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A3)
+
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,A)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A)
 validation.corr(n.P,n.B,n.O,corr.vec=NULL,B)
 correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,B)
 
-para_0910 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A3)
+para_0910 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A)
 para_1112 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = B)
 
 # scenario = small rate Poisson + imbalanced binary/ordinal
 lambda.vec = c(0.2, 0.7)
 prop.vec=c(0.80, 0.90)                               
 prop.list=list(c(0.65, 0.80, 0.90), c(0.50, 0.80, 0.90))
-A4 = gen.corr(seed=1,n.P=n.P, n.B=n.B, n.O=n.O,
-              lambda.vec=lambda.vec, prop.vec=prop.vec, prop.list =prop.list)
-A4
-validation.corr(n.P,n.B,n.O,corr.vec=NULL,A4)
-correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A4)
+
+validation.corr(n.P,n.B,n.O,corr.vec=NULL,A)
+correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,A)
 validation.corr(n.P,n.B,n.O,corr.vec=NULL,B)
 correlation.bound.check(n.P,n.B,n.O,lambda.vec,prop.vec,prop.list, corr.vec=NULL,B)
 
-para_1314 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A4)
+para_1314 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = A)
 para_1516 = list(n.P, n.O, n.B, lambda.vec = lambda.vec, prop.vec = prop.vec, prop.list = prop.list, corr.mat = B)
 ```
 
@@ -272,7 +280,12 @@ result = list("sc_01" = result01, "sc_02" = result02,  "sc_03" = result03, "sc_0
               "sc_05" = result05, "sc_06" = result06,  "sc_07" = result07, "sc_08" = result08,
               "sc_09" = result09, "sc_10" = result10,  "sc_11" = result11, "sc_12" = result12, 
               "sc_13" = result13, "sc_14" = result14,  "sc_15" = result15, "sc_16" = result16)
-write.xlsx(result , file = "C:/Users/pyen2/Dropbox/UIC BSTT 565 Computational Statistics/5.EXAM/Midterm/Q4_PoisBinOrd_Pei-Shan_Jieqi/Result_20201104_PSY.xlsx")
+
+result = list("sc_01" = result01, "sc_02" = result02,  
+              "sc_05" = result05, "sc_06" = result06,  
+              "sc_09" = result09, "sc_10" = result10,  
+              "sc_13" = result13, "sc_14" = result14)
+write.xlsx(result , file = "newresult.xlsx")
 
 
 ```
